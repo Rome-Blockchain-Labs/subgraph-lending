@@ -18,3 +18,12 @@ generate types:
   - [https://github.com/ChaosLabsInc/benqi-subgraph-partial]
   - [https://github.com/token-terminal/tt-subgraphs/tree/main/benqi/v1-avalanche]
 - Contract addresses [https://docs.moonwell.fi/moonwell-finance/protocol-info/contracts]
+
+## WIP
+
+There are some commented out sections from the original compund-v2 graph, they're all marked with `TODO @yhayun` comment.
+Missing items (not exahsutive):
+
+- market.underlyingPriceUSD
+- market.accrualBlockNumber
+- market.supplyRate

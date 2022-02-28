@@ -6,22 +6,21 @@ import {
   NewCloseFactor,
   NewCollateralFactor,
   NewLiquidationIncentive,
-  // NewMaxAssets,
   NewPriceOracle,
   MarketListed,
 } from "../types/Comptroller/Comptroller";
-
+import { Address } from "@graphprotocol/graph-ts";
 import { CToken } from "../types/templates";
 import { Market, Comptroller, Account } from "../types/schema";
 import { mantissaFactorBD, updateCommonCTokenStats, createAccount } from "./helpers";
 import { createMarket } from "./markets";
+import { COMPTROLLER_ADDRESS } from "./constants";
 
 export function handleMarketListed(event: MarketListed): void {
   // Dynamically index all new listed tokens
   CToken.create(event.params.cToken);
   // Create the market for this token, since it's now been listed.
-  let market = createMarket(event.params.cToken.toHexString());
-  market.save();
+  createMarket(event.params.cToken.toHexString());
 }
 
 export function handleMarketEntered(event: MarketEntered): void {
@@ -77,7 +76,7 @@ export function handleMarketExited(event: MarketExited): void {
 }
 
 export function handleNewCloseFactor(event: NewCloseFactor): void {
-  let comptroller = Comptroller.load("1");
+  let comptroller = getOrCreateComptroller();
   comptroller.closeFactor = event.params.newCloseFactorMantissa;
   comptroller.save();
 }
@@ -95,24 +94,26 @@ export function handleNewCollateralFactor(event: NewCollateralFactor): void {
 
 // This should be the first event acccording to etherscan but it isn't.... price oracle is. weird
 export function handleNewLiquidationIncentive(event: NewLiquidationIncentive): void {
-  let comptroller = Comptroller.load("1");
+  let comptroller = getOrCreateComptroller();
   comptroller.liquidationIncentive = event.params.newLiquidationIncentiveMantissa;
   comptroller.save();
 }
 
-//TODO @yhayun
-// export function handleNewMaxAssets(event: NewMaxAssets): void {
-//   let comptroller = Comptroller.load('1')
-//   comptroller.maxAssets = event.params.newMaxAssets
-//   comptroller.save()
-// }
-
 export function handleNewPriceOracle(event: NewPriceOracle): void {
-  let comptroller = Comptroller.load("1");
+  let comptroller = getOrCreateComptroller();
   // This is the first event used in this mapping, so we use it to create the entity
   if (comptroller == null) {
     comptroller = new Comptroller("1");
   }
   comptroller.priceOracle = event.params.newPriceOracle;
   comptroller.save();
+}
+
+export function getOrCreateComptroller(): Comptroller {
+  let comptroller = Comptroller.load("1");
+  if (comptroller == null) {
+    comptroller = new Comptroller("1");
+    comptroller.address = Address.fromString(COMPTROLLER_ADDRESS);
+  }
+  return comptroller as Comptroller;
 }

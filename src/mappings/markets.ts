@@ -2,7 +2,7 @@
 
 // For each division by 10, add one to exponent to truncate one significant figure
 import { Address, BigDecimal, BigInt, log } from "@graphprotocol/graph-ts";
-import { Market, Comptroller } from "../types/schema";
+import { Market, Comptroller, Token } from "../types/schema";
 // PriceOracle is valid from Comptroller deployment until block 8498421
 import { PriceOracle } from "../types/templates/CToken/PriceOracle";
 // PriceOracle2 is valid from 8498422 until present block (until another proxy upgrade)
@@ -11,6 +11,7 @@ import { ERC20 } from "../types/templates/CToken/ERC20";
 import { CToken } from "../types/templates/CToken/CToken";
 
 import { exponentToBigDecimal, mantissaFactor, mantissaFactorBD, cTokenDecimalsBD, zeroBD } from "./helpers";
+import { MANTISSA_FACTOR, QIAVAX_TOKEN_ADDRESS, WAVAX_TOKEN_ADDRESS } from "./constants";
 
 let cUSDCAddress = "0x39aa39c021dfbae8fac545936693ac917d5e7563";
 let cETHAddress = "0x4ddc2d193948926d02f9b1fe9e1daa0718270ed5";
@@ -18,9 +19,11 @@ let daiAddress = "0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359";
 
 // Used for all cERC20 contracts
 function getTokenPrice(
+  // @ts-ignore
   blockNumber: i32,
   eventAddress: Address,
   underlyingAddress: Address,
+  // @ts-ignore
   underlyingDecimals: i32
 ): BigDecimal {
   let comptroller = Comptroller.load("1");
@@ -70,6 +73,7 @@ function getTokenPrice(
 }
 
 // Returns the price of USDC in eth. i.e. 0.005 would mean ETH is $200
+// @ts-ignore
 function getUSDCpriceETH(blockNumber: i32): BigDecimal {
   let comptroller = Comptroller.load("1");
   let oracleAddress = comptroller.priceOracle as Address;
@@ -96,6 +100,110 @@ function getUSDCpriceETH(blockNumber: i32): BigDecimal {
 }
 
 export function createMarket(marketAddress: string): Market {
+  let ctokenAddress = Address.fromString(marketAddress);
+  let ctoken = CToken.bind(ctokenAddress);
+
+  let tryDenomination = ctoken.try_underlying();
+  let tryName = ctoken.try_name();
+  let trySymbol = ctoken.try_symbol();
+  let tryReserveFactorMantissa = ctoken.try_reserveFactorMantissa();
+
+  if (ctokenAddress == Address.fromString(QIAVAX_TOKEN_ADDRESS) && !tryReserveFactorMantissa.reverted) {
+    let token = getOrCreateToken(WAVAX_TOKEN_ADDRESS);
+    token.save();
+
+    let market = getOrCreateMarket(marketAddress, token);
+    market.denomination = token.id;
+    market.name = "Benqi AVAX";
+    market.symbol = "qiAVAX";
+    market.reserveFactor = amountToDenomination(tryReserveFactorMantissa.value, MANTISSA_FACTOR);
+    market.save();
+    return market;
+  }
+
+  if (!tryDenomination.reverted && !tryName.reverted && !trySymbol.reverted && !tryReserveFactorMantissa.reverted) {
+    let token = getOrCreateToken(tryDenomination.value.toHexString());
+    token.save();
+
+    let market = getOrCreateMarket(marketAddress, token);
+    market.denomination = token.id;
+    market.name = tryName.value;
+    market.symbol = trySymbol.value;
+    market.reserveFactor = amountToDenomination(tryReserveFactorMantissa.value, MANTISSA_FACTOR);
+    market.save();
+    return market;
+  }
+  //edge case @yhayun, no market - returning emopty one:
+  log.error("*** YHAYUN *** : No market provided", [marketAddress]);
+  let tempToken = getOrCreateToken(marketAddress);
+  let market = getOrCreateMarket(marketAddress, tempToken);
+  return market;
+}
+
+export function getOrCreateToken(id: string): Token {
+  let token = Token.load(id);
+  if (token == null) {
+    let tokenContract = ERC20.bind(Address.fromString(id));
+    token = new Token(id);
+    token.address = Address.fromString(id);
+    token.name = tokenContract.try_name().reverted ? null : tokenContract.try_name().value;
+    token.symbol = tokenContract.try_symbol().reverted ? null : tokenContract.try_symbol().value;
+    token.decimals = tokenContract.try_decimals().reverted ? null : tokenContract.try_decimals().value;
+    token.totalSupply = tokenContract.try_totalSupply().reverted ? null : tokenContract.try_totalSupply().value;
+  }
+  return token as Token;
+}
+
+function getOrCreateMarket(id: string, token: Token): Market {
+  let market = Market.load(id);
+  if (market == null) {
+    market = new Market(id);
+    market.totalFeesGenerated = zeroBD;
+    market.totalProtocolFeesGenerated = zeroBD;
+    market.totalBorrows = zeroBD;
+    market.totalSupply = zeroBD;
+    market.supplyRate = zeroBD;
+    market.exchangeRate = zeroBD;
+    market.reserveFactor = zeroBD;
+    market.denomination = token.id;
+    market.underlyingAddress = token.address;
+    market.underlyingName = token.name;
+    market.underlyingDecimals = token.decimals;
+    market.underlyingPrice = zeroBD;
+    market.underlyingSymbol = token.symbol;
+    market.underlyingPriceUSD = zeroBD;
+    market.borrowRate = zeroBD;
+    market.collateralFactor = zeroBD;
+    market.cash = zeroBD;
+    market.accrualBlockNumber = 0;
+    market.blockTimestamp = 0;
+    market.borrowIndex = zeroBD;
+    market.name = "";
+    market.symbol = "";
+  }
+  return market as Market;
+}
+
+function getMarket(id: string): Market {
+  return Market.load(id) as Market;
+}
+
+function isMarket(id: string): boolean {
+  return getMarket(id) !== null;
+}
+
+// @ts-ignore
+function amountToDenomination(amount: BigInt, decimals: i32): BigDecimal {
+  return amount.toBigDecimal().div(
+    BigInt.fromI32(10)
+      // @ts-ignore
+      .pow(decimals as u8)
+      .toBigDecimal()
+  );
+}
+
+//TODO @yhayun - old create Market function from compound fork - replaced with benqi implementation.
+export function createMarketDEPRECATED(marketAddress: string): Market {
   let market: Market;
   let contract = CToken.bind(Address.fromString(marketAddress));
 
@@ -148,12 +256,13 @@ export function createMarket(marketAddress: string): Market {
   market.accrualBlockNumber = 0;
   market.blockTimestamp = 0;
   market.borrowIndex = zeroBD;
-  market.reserveFactor = reserveFactor.reverted ? BigInt.fromI32(0) : reserveFactor.value;
+  market.reserveFactor = (reserveFactor.reverted ? BigInt.fromI32(0) : reserveFactor.value).toBigDecimal();
 
   return market;
 }
 
 // Only to be used after block 10678764, since it's aimed to fix the change to USD based price oracle.
+// @ts-ignore
 function getETHinUSD(blockNumber: i32): BigDecimal {
   let comptroller = Comptroller.load("1");
   let oracleAddress = comptroller.priceOracle as Address;
@@ -165,6 +274,7 @@ function getETHinUSD(blockNumber: i32): BigDecimal {
   return ethPriceInUSD;
 }
 
+// @ts-ignore
 export function updateMarket(marketAddress: Address, blockNumber: i32, blockTimestamp: i32): Market {
   let marketID = marketAddress.toHexString();
   let market = Market.load(marketID);
@@ -177,46 +287,47 @@ export function updateMarket(marketAddress: Address, blockNumber: i32, blockTime
     let contractAddress = Address.fromString(market.id);
     let contract = CToken.bind(contractAddress);
 
-    // After block 10678764 price is calculated based on USD instead of ETH
-    if (blockNumber > 10678764) {
-      let ethPriceInUSD = getETHinUSD(blockNumber);
+    //TODO - @yhayun - disable underlying price calc:
+    // // After block 10678764 price is calculated based on USD instead of ETH
+    // if (blockNumber > 10678764) {
+    //   let ethPriceInUSD = getETHinUSD(blockNumber);
 
-      // if cETH, we only update USD price
-      if (market.id == cETHAddress) {
-        market.underlyingPriceUSD = ethPriceInUSD.truncate(market.underlyingDecimals);
-      } else {
-        let tokenPriceUSD = getTokenPrice(
-          blockNumber,
-          contractAddress,
-          market.underlyingAddress as Address,
-          market.underlyingDecimals
-        );
-        market.underlyingPrice = tokenPriceUSD.div(ethPriceInUSD).truncate(market.underlyingDecimals);
-        // if USDC, we only update ETH price
-        if (market.id != cUSDCAddress) {
-          market.underlyingPriceUSD = tokenPriceUSD.truncate(market.underlyingDecimals);
-        }
-      }
-    } else {
-      let usdPriceInEth = getUSDCpriceETH(blockNumber);
+    //   // if cETH, we only update USD price
+    //   if (market.id == cETHAddress) {
+    //     market.underlyingPriceUSD = ethPriceInUSD.truncate(market.underlyingDecimals);
+    //   } else {
+    //     let tokenPriceUSD = getTokenPrice(
+    //       blockNumber,
+    //       contractAddress,
+    //       market.underlyingAddress as Address,
+    //       market.underlyingDecimals
+    //     );
+    //     market.underlyingPrice = tokenPriceUSD.div(ethPriceInUSD).truncate(market.underlyingDecimals);
+    //     // if USDC, we only update ETH price
+    //     if (market.id != cUSDCAddress) {
+    //       market.underlyingPriceUSD = tokenPriceUSD.truncate(market.underlyingDecimals);
+    //     }
+    //   }
+    // } else {
+    //   let usdPriceInEth = getUSDCpriceETH(blockNumber);
 
-      // if cETH, we only update USD price
-      if (market.id == cETHAddress) {
-        market.underlyingPriceUSD = market.underlyingPrice.div(usdPriceInEth).truncate(market.underlyingDecimals);
-      } else {
-        let tokenPriceEth = getTokenPrice(
-          blockNumber,
-          contractAddress,
-          market.underlyingAddress as Address,
-          market.underlyingDecimals
-        );
-        market.underlyingPrice = tokenPriceEth.truncate(market.underlyingDecimals);
-        // if USDC, we only update ETH price
-        if (market.id != cUSDCAddress) {
-          market.underlyingPriceUSD = market.underlyingPrice.div(usdPriceInEth).truncate(market.underlyingDecimals);
-        }
-      }
-    }
+    //   // if cETH, we only update USD price
+    //   if (market.id == cETHAddress) {
+    //     market.underlyingPriceUSD = market.underlyingPrice.div(usdPriceInEth).truncate(market.underlyingDecimals);
+    //   } else {
+    //     let tokenPriceEth = getTokenPrice(
+    //       blockNumber,
+    //       contractAddress,
+    //       market.underlyingAddress as Address,
+    //       market.underlyingDecimals
+    //     );
+    //     market.underlyingPrice = tokenPriceEth.truncate(market.underlyingDecimals);
+    //     // if USDC, we only update ETH price
+    //     if (market.id != cUSDCAddress) {
+    //       market.underlyingPriceUSD = market.underlyingPrice.div(usdPriceInEth).truncate(market.underlyingDecimals);
+    //     }
+    //   }
+    // }
 
     //TODO @yhayun
     // market.accrualBlockNumber = contract.accrualBlockNumber().toI32()
@@ -276,7 +387,7 @@ export function updateMarket(marketAddress: Address, blockNumber: i32, blockTime
     // This fails on only the first call to cZRX. It is unclear why, but otherwise it works.
     // So we handle it like this.
     //TODO @yhayun
-    // let supplyRatePerBlock = contract.try_supplyRatePerBlock()
+    // let supplyRatePerBlock = contract.su()
     // if (supplyRatePerBlock.reverted) {
     //   log.info('***CALL FAILED*** : cERC20 supplyRatePerBlock() reverted', [])
     //   market.supplyRate = zeroBD

@@ -1,6 +1,6 @@
 specVersion: 0.0.2
-description: Compound is an open-source protocol for algorithmic, efficient Money Markets on the Ethereum blockchain.
-repository: https://github.com/graphprotocol/compound-V2-subgraph
+description: Benqi is an open-source protocol for algorithmic, efficient Money Markets on the Avalanche blockchain.
+repository: https://github.com/ChaosLabsInc/subgraph-benqi
 schema:
   file: ./schema.graphql
 dataSources:

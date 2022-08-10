@@ -17,7 +17,6 @@ generate types:
 - Partial Benqi graph (Compund V2):
   - [https://github.com/ChaosLabsInc/benqi-subgraph-partial]
   - [https://github.com/token-terminal/tt-subgraphs/tree/main/benqi/v1-avalanche]
-- Contract addresses [https://docs.moonwell.fi/moonwell-finance/protocol-info/contracts]
 
 ## WIP
 

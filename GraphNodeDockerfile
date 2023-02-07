@@ -11,5 +11,5 @@ WORKDIR /graph-node
 RUN \
   cargo build --release
 
-CMD cargo run --release -- --postgres-url postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}/graph-node --ethereum-rpc ${NODE_NETWORK}:full:${NODE_RPC_URL} --ipfs ${IPFS_HOST}
+CMD cargo run --release -- --postgres-url postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}/graph-node --ethereum-rpc ${NODE_RPC_CONFIG} --ipfs ${IPFS_HOST}
 

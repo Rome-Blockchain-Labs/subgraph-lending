@@ -1,5 +1,19 @@
 # Benqi-subgraph
 
+### Prerequisites:
+- Graph-cli: https://github.com/graphprotocol/graph-tooling/tree/main/packages/cli
+
+#### To run a graph-node on your local computer
+- Graph-node: https://github.com/graphprotocol/graph-node
+
+#### To run a graph-node on docker
+- Docker: https://docs.docker.com/engine/
+- Setup on host machine: https://github.com/fmedv/docker-go-ipfs#setup-pre-configuration
+
+Sometimes the graph-node process starts up faster than the ipfs, so it's safer to run 2 separate commands:
+`docker-compose up -d graph-db ipfs`
+`docker-compose up graph-node`
+
 ### Commands:
 
 generate types:

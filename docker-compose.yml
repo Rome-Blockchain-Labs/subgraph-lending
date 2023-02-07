@@ -36,7 +36,7 @@ services:
       POSTGRES_HOST: graph-db:5432
       IPFS_HOST: ipfs:5001
       NODE_NETWORK: avalanche
-      NODE_RPC_URL: http://avalanche05.ct.romenet.io:9650/ext/bc/C/rpc
+      NODE_RPC_CONFIG: avalanche:archive:http://avalanche05.ct.romenet.io:9650/ext/bc/C/rpc
     ports:
       - "8000:8000"
       - "8001:8001"

@@ -1,0 +1,48 @@
+version: "3.7"
+services:
+  graph-db:
+    image: postgres:15
+    restart: always
+    volumes:
+      - ../db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432" #console
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgrespassword
+      POSTGRES_DB: graph-node
+      POSTGRES_INITDB_ARGS: "--locale-provider=icu --icu-locale=C"
+      LC_ALL: "C"
+      LC_CTYPE: "C"
+    command: ["postgres", "-c", "log_statement=all"]
+  ipfs:
+    image: ipfs/kubo:master-2023-02-02-14649aa
+    restart: always
+    volumes:
+      - ../ipfs/staging:/export
+      - ../ipfs/data:/data/ipfs
+    ports:
+      - "4001:4001"
+      - "4001:4001/udp"
+      - "127.0.0.1:8080:8080"
+      - "127.0.0.1:5001:5001"
+  graph-node:
+    build: 
+      context: .
+      dockerfile: GraphNodeDockerfile
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgrespassword
+      POSTGRES_HOST: graph-db:5432
+      IPFS_HOST: ipfs:5001
+      NODE_NETWORK: avalanche
+      NODE_RPC_URL: http://avalanche05.ct.romenet.io:9650/ext/bc/C/rpc
+    ports:
+      - "8000:8000"
+      - "8001:8001"
+      - "8020:8020"
+      - "8030:8030"
+      - "8040:8040"
+    depends_on:
+      - graph-db
+      - ipfs

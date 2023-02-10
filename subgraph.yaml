@@ -17,8 +17,21 @@ dataSources:
       language: wasm/assemblyscript
       file: ./src/mappings/comptroller.ts
       entities:
+        - Account
+        - AccountCToken
+        - AccountCTokenTransaction
+        - AccountSnapshot
         - Comptroller
         - Market
+        - MarketDailySnapshot
+        - MarketHourlySnapshot
+        - BorrowEvent
+        - RepayEvent
+        - LiquidationEvent
+        - MintEvent
+        - RedeemEvent
+        - TransferEvent
+        - Token
       abis:
         - name: Comptroller
           file: ./abis/comptroller.json
@@ -43,10 +56,8 @@ dataSources:
           handler: handleNewCollateralFactor
         - event: NewLiquidationIncentive(uint256,uint256)
           handler: handleNewLiquidationIncentive
-        # - event: NewMaxAssets(uint256,uint256)
-        #   handler: handleNewMaxAssets
-        - event: NewPriceOracle(address,address)
-          handler: handleNewPriceOracle
+      blockHandlers:
+        - handler: handleNewBlock
 templates:
   - name: CToken
     kind: ethereum/contract

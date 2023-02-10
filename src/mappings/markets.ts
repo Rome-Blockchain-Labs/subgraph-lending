@@ -12,6 +12,7 @@ import { CToken } from "../types/templates/CToken/CToken";
 
 import { exponentToBigDecimal, mantissaFactor, mantissaFactorBD, cTokenDecimalsBD, zeroBD } from "./helpers";
 import { MANTISSA_FACTOR, QIAVAX_TOKEN_ADDRESS, WAVAX_TOKEN_ADDRESS } from "./constants";
+import { getOrCreateComptroller } from './comptroller';
 
 let cUSDCAddress = "0x39aa39c021dfbae8fac545936693ac917d5e7563";
 let cETHAddress = "0x4ddc2d193948926d02f9b1fe9e1daa0718270ed5";
@@ -26,7 +27,7 @@ function getTokenPrice(
   // @ts-ignore
   underlyingDecimals: i32
 ): BigDecimal {
-  let comptroller = Comptroller.load("1");
+  let comptroller = getOrCreateComptroller();
   let oracleAddress = comptroller.priceOracle as Address;
   let underlyingPrice: BigDecimal;
   let priceOracle1Address = Address.fromString("02557a5e05defeffd4cae6d83ea3d173b272c904");
@@ -75,7 +76,7 @@ function getTokenPrice(
 // Returns the price of USDC in eth. i.e. 0.005 would mean ETH is $200
 // @ts-ignore
 function getUSDCpriceETH(blockNumber: i32): BigDecimal {
-  let comptroller = Comptroller.load("1");
+  let comptroller = getOrCreateComptroller();
   let oracleAddress = comptroller.priceOracle as Address;
   let priceOracle1Address = Address.fromString("02557a5e05defeffd4cae6d83ea3d173b272c904");
   let USDCAddress = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48 ";
@@ -167,10 +168,10 @@ function getOrCreateMarket(id: string, token: Token): Market {
     market.reserveFactor = zeroBD;
     market.denomination = token.id;
     market.underlyingAddress = token.address;
-    market.underlyingName = token.name;
+    market.underlyingName = token.name!;
     market.underlyingDecimals = token.decimals;
     market.underlyingPrice = zeroBD;
-    market.underlyingSymbol = token.symbol;
+    market.underlyingSymbol = token.symbol!;
     market.underlyingPriceUSD = zeroBD;
     market.borrowRate = zeroBD;
     market.collateralFactor = zeroBD;
@@ -264,7 +265,7 @@ export function createMarketDEPRECATED(marketAddress: string): Market {
 // Only to be used after block 10678764, since it's aimed to fix the change to USD based price oracle.
 // @ts-ignore
 function getETHinUSD(blockNumber: i32): BigDecimal {
-  let comptroller = Comptroller.load("1");
+  let comptroller = getOrCreateComptroller();
   let oracleAddress = comptroller.priceOracle as Address;
   let oracle = PriceOracle2.bind(oracleAddress);
   let tryPrice = oracle.try_getUnderlyingPrice(Address.fromString(cETHAddress));

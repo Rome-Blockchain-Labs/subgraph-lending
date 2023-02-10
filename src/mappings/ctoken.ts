@@ -68,7 +68,7 @@ export function handleMint(event: Mint): void {
   mint.from = event.address;
   mint.blockNumber = event.block.number.toI32();
   mint.blockTime = event.block.timestamp.toI32();
-  mint.cTokenSymbol = market.symbol;
+  mint.market = market.id;
   mint.underlyingAmount = underlyingAmount;
   mint.save();
 }
@@ -110,7 +110,7 @@ export function handleRedeem(event: Redeem): void {
   redeem.from = event.params.redeemer;
   redeem.blockNumber = event.block.number.toI32();
   redeem.blockTime = event.block.timestamp.toI32();
-  redeem.cTokenSymbol = market.symbol;
+  redeem.market = market.id;
   redeem.underlyingAmount = underlyingAmount;
   redeem.save();
 }
@@ -301,6 +301,10 @@ export function handleLiquidateBorrow(event: LiquidateBorrow): void {
     marketRepayToken = createMarket(event.address.toHexString());
   }
   let marketCTokenLiquidated = Market.load(event.params.qiTokenCollateral.toHexString());
+  if (marketRepayToken == null) {
+    marketCTokenLiquidated = createMarket(event.params.qiTokenCollateral.toHexString());
+  }
+
   let mintID = event.transaction.hash
     .toHexString()
     .concat("-")
@@ -323,7 +327,8 @@ export function handleLiquidateBorrow(event: LiquidateBorrow): void {
   liquidation.blockTime = event.block.timestamp.toI32();
   liquidation.underlyingSymbol = marketRepayToken.underlyingSymbol;
   liquidation.underlyingRepayAmount = underlyingRepayAmount;
-  liquidation.cTokenSymbol = marketCTokenLiquidated.symbol;
+  liquidation.market = marketCTokenLiquidated!.id;
+  liquidation.repayMarket = marketRepayToken.id;
   liquidation.save();
 }
 
@@ -347,6 +352,9 @@ export function handleTransfer(event: Transfer): void {
   // with normal transfers, since mint, redeem, and seize transfers will already run updateMarket()
   let marketID = event.address.toHexString();
   let market = Market.load(marketID);
+  if (market == null) {
+    market = createMarket(marketID);
+  }
   if (market.accrualBlockNumber != event.block.number.toI32()) {
     market = updateMarket(event.address, event.block.number.toI32(), event.block.timestamp.toI32());
   }
@@ -431,7 +439,7 @@ export function handleTransfer(event: Transfer): void {
   transfer.from = event.params.from;
   transfer.blockNumber = event.block.number.toI32();
   transfer.blockTime = event.block.timestamp.toI32();
-  transfer.cTokenSymbol = market.symbol;
+  transfer.market = market.id;
   transfer.save();
 }
 
@@ -442,6 +450,9 @@ export function handleAccrueInterest(event: AccrueInterest): void {
 export function handleNewReserveFactor(event: NewReserveFactor): void {
   let marketID = event.address.toHex();
   let market = Market.load(marketID);
+  if (market == null) {
+    market = createMarket(marketID);
+  }
   market.reserveFactor = event.params.newReserveFactorMantissa.toBigDecimal();
   market.save();
 }

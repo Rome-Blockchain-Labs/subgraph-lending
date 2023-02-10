@@ -15,10 +15,8 @@ type Comptroller @entity {
   address: Bytes!
 }
 
-"""
-Market stores all high level variables for a cToken market
-"""
-type Market @entity {
+interface MarketInfo {
+  
   #Fields that match compounds API
   "Yearly borrow rate. With 2102400 blocks per year"
   borrowRate: BigDecimal!
@@ -30,28 +28,20 @@ type Market @entity {
   exchangeRate: BigDecimal!
   "Address of the interest rate model"
   interestRateModelAddress: Bytes
-  "Name of the cToken"
-  name: String!
   "Reserves stored in the contract"
   reserves: BigDecimal
   "Yearly supply rate. With 2104400 blocks per year"
   supplyRate: BigDecimal
-  "CToken symbol"
-  symbol: String!
-  "CToken address"
-  id: ID!
   "Borrows in the market"
   totalBorrows: BigDecimal!
   "CToken supply. CTokens have 8 decimals"
   totalSupply: BigDecimal!
-  "Underlying token address"
-  underlyingAddress: Bytes!
-  "Underlying token name"
-  underlyingName: String!
+  "Number of users holding market tokens"
+  suppliersCount: Int!
+  "Number of users with pending borrows"
+  borrowersCount: Int!
   "Underlying price of token in ETH (ex. 0.007 DAI)"
   underlyingPrice: BigDecimal!
-  "Underlying token symbol"
-  underlyingSymbol: String!
 
   # Fields that are not in compounds api
   "Block the market is updated to"
@@ -64,16 +54,236 @@ type Market @entity {
   reserveFactor: BigDecimal!
   "Underlying token price in USD"
   underlyingPriceUSD: BigDecimal!
-  "Underlying token decimal length"
-  underlyingDecimals: Int!
 
   # @yhayun - added specifically for benqi:
+  "Total rewards accrued per reward type. The array index is the same as the reward type index and the unit is that of the reward type"
+  totalRewardsDistributed: [BigDecimal!]!
   "Total interest accrued"
   totalFeesGenerated: BigDecimal!
   "The part of total fees that goes to the protocol"
   totalProtocolFeesGenerated: BigDecimal!
+}
+
+"""
+Market stores all high level variables for a cToken market
+"""
+type Market implements MarketInfo @entity {
+  "CToken address"
+  id: ID!
+  
+  ### INTERFACE FIELDS
+  #Fields that match compounds API
+  "Yearly borrow rate. With 2102400 blocks per year"
+  borrowRate: BigDecimal!
+  "The cToken contract balance of ERC20 or ETH"
+  cash: BigDecimal!
+  "Collateral factor determining how much one can borrow"
+  collateralFactor: BigDecimal!
+  "Exchange rate of tokens / cTokens"
+  exchangeRate: BigDecimal!
+  "Address of the interest rate model"
+  interestRateModelAddress: Bytes
+  "Reserves stored in the contract"
+  reserves: BigDecimal
+  "Yearly supply rate. With 2104400 blocks per year"
+  supplyRate: BigDecimal
+  "Borrows in the market"
+  totalBorrows: BigDecimal!
+  "CToken supply. CTokens have 8 decimals"
+  totalSupply: BigDecimal!
+  "Number of users holding market tokens"
+  suppliersCount: Int!
+  "Number of users with pending borrows"
+  borrowersCount: Int!
+  "Underlying price of token in ETH (ex. 0.007 DAI)"
+  underlyingPrice: BigDecimal!
+
+  # Fields that are not in compounds api
+  "Block the market is updated to"
+  accrualBlockNumber: Int
+  "Timestamp the market was most recently updated"
+  blockTimestamp: Int!
+  "The history of the markets borrow index return (Think S&P 500)"
+  borrowIndex: BigDecimal!
+  "The factor determining interest that goes to reserves"
+  reserveFactor: BigDecimal!
+  "Underlying token price in USD"
+  underlyingPriceUSD: BigDecimal!
+
+  # @yhayun - added specifically for benqi:
+  "Total rewards accrued per reward type. The array index is the same as the reward type index and the unit is that of the reward type"
+  totalRewardsDistributed: [BigDecimal!]!
+  "Total interest accrued"
+  totalFeesGenerated: BigDecimal!
+  "The part of total fees that goes to the protocol"
+  totalProtocolFeesGenerated: BigDecimal!
+  
+  ### END OF INTERFACE FIELDS
+
+  #Fields that match compounds API
+  "Name of the cToken"
+  name: String!
+  "CToken symbol"
+  symbol: String!
+  "Underlying token address"
+  underlyingAddress: Bytes!
+  "Underlying token name"
+  underlyingName: String!
+  "Underlying token symbol"
+  underlyingSymbol: String!
+
+  # Fields that are not in compounds api
+  "Underlying token decimal length"
+  underlyingDecimals: Int!
+
+  # @yhayun - added specifically for benqi:
   "Underlying token"
   denomination: Token
+  """Since CTokenTransfer uses the Seized market as the main market, 
+  this field enables the search of liquidation events where this is the market being repaid"""
+  repaymentsThroughLiquidation: [LiquidationEvent!]! @derivedFrom(field: "repayMarket")
+  "All cTokenTransfer events which the token of this market is being transfered (i.e. LiquidationEvents only appear on the Collateral market)"
+  cTokenTransfers: [CTokenTransfer!]! @derivedFrom(field: "market")
+  "Transfers of the Underlying Token where no market token is being transfered (i.e. Borrow and Repay)"
+  underlyingTransfer: [UnderlyingTransfer!]! @derivedFrom(field: "market")
+
+  hourlySnapshots: [MarketHourlySnapshot!]! @derivedFrom(field: "market")
+  dailySnapshots: [MarketDailySnapshot!]! @derivedFrom(field: "market")
+}
+
+"""
+Saves the historical values in the Market over time for every beginning of hour in UTC.
+Basically a copy of the market values in that particular moment
+"""
+type MarketHourlySnapshot implements MarketInfo @entity {
+  "The id is marketId-timestamp"
+  id: ID!
+  market: Market!
+  "UTC timestamp for the beginning of the hour (ex.: timestamp for 01:00:00, 14:00:00, ...)"
+  timestamp: BigInt!
+  lastBlockNumber: BigInt!
+  lastBlockHash: String!
+
+  ### INTERFACE FIELDS
+  #Fields that match compounds API
+  "Yearly borrow rate. With 2102400 blocks per year"
+  borrowRate: BigDecimal!
+  "The cToken contract balance of ERC20 or ETH"
+  cash: BigDecimal!
+  "Collateral factor determining how much one can borrow"
+  collateralFactor: BigDecimal!
+  "Exchange rate of tokens / cTokens"
+  exchangeRate: BigDecimal!
+  "Address of the interest rate model"
+  interestRateModelAddress: Bytes
+  "Reserves stored in the contract"
+  reserves: BigDecimal
+  "Yearly supply rate. With 2104400 blocks per year"
+  supplyRate: BigDecimal
+  "Borrows in the market"
+  totalBorrows: BigDecimal!
+  "CToken supply. CTokens have 8 decimals"
+  totalSupply: BigDecimal!
+  "Number of users holding market tokens"
+  suppliersCount: Int!
+  "Number of users with pending borrows"
+  borrowersCount: Int!
+  "Underlying price of token in ETH (ex. 0.007 DAI)"
+  underlyingPrice: BigDecimal!
+
+  # Fields that are not in compounds api
+  "Block the market is updated to"
+  accrualBlockNumber: Int
+  "Timestamp the market was most recently updated"
+  blockTimestamp: Int!
+  "The history of the markets borrow index return (Think S&P 500)"
+  borrowIndex: BigDecimal!
+  "The factor determining interest that goes to reserves"
+  reserveFactor: BigDecimal!
+  "Underlying token price in USD"
+  underlyingPriceUSD: BigDecimal!
+
+  # @yhayun - added specifically for benqi:
+  "Total rewards accrued per reward type. The array index is the same as the reward type index and the unit is that of the reward type"
+  totalRewardsDistributed: [BigDecimal!]!
+  "Total interest accrued"
+  totalFeesGenerated: BigDecimal!
+  "The part of total fees that goes to the protocol"
+  totalProtocolFeesGenerated: BigDecimal!
+  
+  ### END OF INTERFACE FIELDS
+}
+
+"""
+Saves the historical values in the Market over time for every beginning of a day in UTC.
+Basically a copy of the market values in that particular moment
+"""
+type MarketDailySnapshot implements MarketInfo @entity {
+  "The id is marketId-timestamp"
+  id: ID!
+  market: Market!
+  "UTC timestamp for the beginning of the day (ex.: timestamp for Day 1 00:00:00, Day 2 00:00:00, ...)"
+  timestamp: BigInt!
+  lastBlockNumber: BigInt!
+  lastBlockHash: String!
+
+  ### INTERFACE FIELDS
+  #Fields that match compounds API
+  "Yearly borrow rate. With 2102400 blocks per year"
+  borrowRate: BigDecimal!
+  "The cToken contract balance of ERC20 or ETH"
+  cash: BigDecimal!
+  "Collateral factor determining how much one can borrow"
+  collateralFactor: BigDecimal!
+  "Exchange rate of tokens / cTokens"
+  exchangeRate: BigDecimal!
+  "Address of the interest rate model"
+  interestRateModelAddress: Bytes
+  "Reserves stored in the contract"
+  reserves: BigDecimal
+  "Yearly supply rate. With 2104400 blocks per year"
+  supplyRate: BigDecimal
+  "Borrows in the market"
+  totalBorrows: BigDecimal!
+  "CToken supply. CTokens have 8 decimals"
+  totalSupply: BigDecimal!
+  "Number of users holding market tokens"
+  suppliersCount: Int!
+  "Number of users with pending borrows"
+  borrowersCount: Int!
+  "Underlying price of token in ETH (ex. 0.007 DAI)"
+  underlyingPrice: BigDecimal!
+
+  # Fields that are not in compounds api
+  "Block the market is updated to"
+  accrualBlockNumber: Int
+  "Timestamp the market was most recently updated"
+  blockTimestamp: Int!
+  "The history of the markets borrow index return (Think S&P 500)"
+  borrowIndex: BigDecimal!
+  "The factor determining interest that goes to reserves"
+  reserveFactor: BigDecimal!
+  "Underlying token price in USD"
+  underlyingPriceUSD: BigDecimal!
+
+  # @yhayun - added specifically for benqi:
+  "Total rewards accrued per reward type. The array index is the same as the reward type index and the unit is that of the reward type"
+  totalRewardsDistributed: [BigDecimal!]!
+  "Total interest accrued"
+  totalFeesGenerated: BigDecimal!
+  "The part of total fees that goes to the protocol"
+  totalProtocolFeesGenerated: BigDecimal!
+  
+  ### END OF INTERFACE FIELDS
+}
+
+type AccountSnapshot @entity(immutable: true) {
+  id: ID!
+  account: Account!
+  market: Market!
+  blockNumber: Int!
+  supply_amount: BigDecimal!
+  borrow_amount: BigDecimal!
 }
 
 """
@@ -176,12 +386,24 @@ type AccountCTokenTransaction @entity {
 }
 
 """
+Types of CTokenTransfers
+"""
+enum CTokenTransferType {
+  Transfer
+  Mint
+  Redeem
+  Liquidation
+}
+
+"""
 An interface for a transfer of any cToken. TransferEvent, MintEvent,
 RedeemEvent, and LiquidationEvent all use this interface
 """
 interface CTokenTransfer {
   "Transaction hash concatenated with log index"
   id: ID!
+  "Type of the specific transfer"
+  type: CTokenTransferType!
   "cTokens transferred"
   amount: BigDecimal!
   "Account that received tokens"
@@ -192,17 +414,19 @@ interface CTokenTransfer {
   blockNumber: Int!
   "Block time"
   blockTime: Int!
-  "Symbol of the cToken transferred"
-  cTokenSymbol: String!
+  "The cToken transferred"
+  market: Market!
 }
 
 """
 TransferEvent will be stored for every mint, redeem, liquidation, and any normal
 transfer between two accounts.
 """
-type TransferEvent implements CTokenTransfer @entity {
+type TransferEvent implements CTokenTransfer @entity(immutable: true) {
   "Transaction hash concatenated with log index"
   id: ID!
+  "Type of the specific transfer"
+  type: CTokenTransferType!
   "cTokens transferred"
   amount: BigDecimal!
   "Account that received tokens"
@@ -213,17 +437,19 @@ type TransferEvent implements CTokenTransfer @entity {
   blockNumber: Int!
   "Block time"
   blockTime: Int!
-  "Symbol of the cToken transferred"
-  cTokenSymbol: String!
+  "The cToken transferred"
+  market: Market!
 }
 
 """
 MintEvent stores information for mints. From address will always be a cToken
 market address
 """
-type MintEvent implements CTokenTransfer @entity {
+type MintEvent implements CTokenTransfer @entity(immutable: true) {
   "Transaction hash concatenated with log index"
   id: ID!
+  "Type of the specific transfer"
+  type: CTokenTransferType!
   "cTokens transferred"
   amount: BigDecimal!
   "Account that received tokens (minter)"
@@ -234,8 +460,8 @@ type MintEvent implements CTokenTransfer @entity {
   blockNumber: Int!
   "Block time"
   blockTime: Int!
-  "Symbol of the cToken transferred"
-  cTokenSymbol: String!
+  "The cToken transferred"
+  market: Market!
   "Underlying token amount transferred"
   underlyingAmount: BigDecimal
 }
@@ -244,9 +470,11 @@ type MintEvent implements CTokenTransfer @entity {
 RedeemEvent stores information for redeems. To address will always be a
 cToken market address
 """
-type RedeemEvent implements CTokenTransfer @entity {
+type RedeemEvent implements CTokenTransfer @entity(immutable: true) {
   "Transaction hash concatenated with log index"
   id: ID!
+  "Type of the specific transfer"
+  type: CTokenTransferType!
   "cTokens transferred"
   amount: BigDecimal!
   "Account that received tokens (CToken contract)"
@@ -257,8 +485,8 @@ type RedeemEvent implements CTokenTransfer @entity {
   blockNumber: Int!
   "Block time"
   blockTime: Int!
-  "Symbol of the cToken transferred"
-  cTokenSymbol: String!
+  "The cToken transferred"
+  market: Market!
   "Underlying token amount transferred"
   underlyingAmount: BigDecimal
 }
@@ -267,9 +495,11 @@ type RedeemEvent implements CTokenTransfer @entity {
 LiquidationEvent stores information for liquidations. The event is emitted from
 the cToken market address.
 """
-type LiquidationEvent implements CTokenTransfer @entity {
+type LiquidationEvent implements CTokenTransfer @entity(immutable: true) {
   "Transaction hash concatenated with log index"
   id: ID!
+  "Type of the specific transfer"
+  type: CTokenTransferType!
   "cTokens seized"
   amount: BigDecimal!
   "Liquidator receiving tokens"
@@ -280,12 +510,22 @@ type LiquidationEvent implements CTokenTransfer @entity {
   blockNumber: Int!
   "Block time"
   blockTime: Int!
-  "cToken that was sezied as collateral"
-  cTokenSymbol: String!
+  "cToken that was seized as collateral"
+  market: Market!
+  "The cToken that was repaid during this liquidation"
+  repayMarket: Market!
   "Symbol of the underlying asset repaid through liquidation"
   underlyingSymbol: String!
   "Underlying cToken amount that was repaid by liquidator"
   underlyingRepayAmount: BigDecimal!
+}
+
+"""
+Types of UnderlyingTransfer
+"""
+enum UnderlyingTransferType {
+  Borrow
+  Repay
 }
 
 """
@@ -295,6 +535,10 @@ and repays
 interface UnderlyingTransfer {
   "Transaction hash concatenated with log index"
   id: ID!
+  "Specific type of the implementation"
+  type: UnderlyingTransferType!
+  "The cToken where the lending happened"
+  market: Market!
   "Amount of underlying borrowed"
   amount: BigDecimal!
   "Total borrows of this asset the account has"
@@ -312,9 +556,13 @@ interface UnderlyingTransfer {
 """
 BorrowEvent stores information for borrows
 """
-type BorrowEvent implements UnderlyingTransfer @entity {
+type BorrowEvent implements UnderlyingTransfer @entity(immutable: true) {
   "Transaction hash concatenated with log index"
   id: ID!
+  "Market from which the token is being borrowed"
+  market: Market!
+  "Specific type of the implementation"
+  type: UnderlyingTransferType!
   "Amount of underlying borrowed"
   amount: BigDecimal!
   "Total borrows of this asset the account has"
@@ -333,9 +581,13 @@ type BorrowEvent implements UnderlyingTransfer @entity {
 RepayEvent stores information for repays. Payer is not always the same as
 borrower, such as in the event of a Liquidation
 """
-type RepayEvent implements UnderlyingTransfer @entity {
+type RepayEvent implements UnderlyingTransfer @entity(immutable: true) {
   "Transaction hash concatenated with log index"
   id: ID!
+  "Market to which the token is being repaid"
+  market: Market!
+  "Specific type of the implementation"
+  type: UnderlyingTransferType!
   "Amount of underlying repaid"
   amount: BigDecimal!
   "Total borrows of this asset the account has"
@@ -352,7 +604,7 @@ type RepayEvent implements UnderlyingTransfer @entity {
   payer: Bytes!
 }
 
-type Token @entity {
+type Token @entity(immutable: true) {
   "Token address"
   id: ID!
 
@@ -360,14 +612,14 @@ type Token @entity {
   address: Bytes!
 
   "Token name"
-  name: String!
+  name: String
 
   "Token symbol"
-  symbol: String!
+  symbol: String
 
   "Token decimals"
-  decimals: Int!
+  decimals: Int
 
   "Token's total supply"
-  totalSupply: BigInt!
+  totalSupply: BigInt
 }

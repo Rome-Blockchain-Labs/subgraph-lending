@@ -134,7 +134,7 @@ export function createMarket(marketAddress: string): Market {
     market.save();
     return market;
   }
-  //edge case @yhayun, no market - returning emopty one:
+  //edge case @yhayun, no market - returning empty one:
   log.error("*** YHAYUN *** : No market provided", [marketAddress]);
   let tempToken = getOrCreateToken(marketAddress);
   let market = getOrCreateMarket(marketAddress, tempToken);
@@ -176,8 +176,8 @@ function getOrCreateMarket(id: string, token: Token): Market {
     market.borrowRate = zeroBD;
     market.collateralFactor = zeroBD;
     market.cash = zeroBD;
-    market.accrualBlockNumber = 0;
-    market.blockTimestamp = 0;
+    market.accrualBlockNumber = zeroBI;
+    market.blockTimestamp = zeroBI;
     market.borrowIndex = zeroBD;
     market.name = "";
     market.symbol = "";
@@ -254,8 +254,8 @@ export function createMarketDEPRECATED(marketAddress: string): Market {
   market.totalBorrows = zeroBD;
   market.totalSupply = zeroBD;
 
-  market.accrualBlockNumber = 0;
-  market.blockTimestamp = 0;
+  market.accrualBlockNumber = zeroBI;
+  market.blockTimestamp = zeroBI;
   market.borrowIndex = zeroBD;
   market.reserveFactor = (reserveFactor.reverted ? BigInt.fromI32(0) : reserveFactor.value).toBigDecimal();
 
@@ -276,7 +276,7 @@ function getETHinUSD(blockNumber: i32): BigDecimal {
 }
 
 // @ts-ignore
-export function updateMarket(marketAddress: Address, blockNumber: i32, blockTimestamp: i32): Market {
+export function updateMarket(marketAddress: Address, blockNumber: BigInt, blockTimestamp: BigInt): Market {
   let marketID = marketAddress.toHexString();
   let market = Market.load(marketID);
   if (market == null) {
@@ -331,7 +331,7 @@ export function updateMarket(marketAddress: Address, blockNumber: i32, blockTime
     // }
 
     //TODO @yhayun
-    // market.accrualBlockNumber = contract.accrualBlockNumber().toI32()
+    // market.accrualBlockNumber = contract.accrualBlockNumber()
     market.blockTimestamp = blockTimestamp;
     market.totalSupply = contract
       .totalSupply()

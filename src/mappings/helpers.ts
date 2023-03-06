@@ -18,6 +18,7 @@ export let cTokenDecimals = 8;
 export let mantissaFactorBD: BigDecimal = exponentToBigDecimal(18);
 export let cTokenDecimalsBD: BigDecimal = exponentToBigDecimal(8);
 export let zeroBD = BigDecimal.fromString("0");
+export let zeroBI = BigInt.fromI32(0);
 
 export function createAccountCToken(
   cTokenStatsID: string,

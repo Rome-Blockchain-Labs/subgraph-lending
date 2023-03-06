@@ -45,9 +45,9 @@ interface MarketInfo {
 
   # Fields that are not in compounds api
   "Block the market is updated to"
-  accrualBlockNumber: Int
+  accrualBlockNumber: BigInt
   "Timestamp the market was most recently updated"
-  blockTimestamp: Int!
+  blockTimestamp: BigInt!
   "The history of the markets borrow index return (Think S&P 500)"
   borrowIndex: BigDecimal!
   "The factor determining interest that goes to reserves"
@@ -100,9 +100,9 @@ type Market implements MarketInfo @entity {
 
   # Fields that are not in compounds api
   "Block the market is updated to"
-  accrualBlockNumber: Int
+  accrualBlockNumber: BigInt
   "Timestamp the market was most recently updated"
-  blockTimestamp: Int!
+  blockTimestamp: BigInt!
   "The history of the markets borrow index return (Think S&P 500)"
   borrowIndex: BigDecimal!
   "The factor determining interest that goes to reserves"
@@ -193,9 +193,9 @@ type MarketHourlySnapshot implements MarketInfo @entity {
 
   # Fields that are not in compounds api
   "Block the market is updated to"
-  accrualBlockNumber: Int
+  accrualBlockNumber: BigInt
   "Timestamp the market was most recently updated"
-  blockTimestamp: Int!
+  blockTimestamp: BigInt!
   "The history of the markets borrow index return (Think S&P 500)"
   borrowIndex: BigDecimal!
   "The factor determining interest that goes to reserves"
@@ -256,9 +256,9 @@ type MarketDailySnapshot implements MarketInfo @entity {
 
   # Fields that are not in compounds api
   "Block the market is updated to"
-  accrualBlockNumber: Int
+  accrualBlockNumber: BigInt
   "Timestamp the market was most recently updated"
-  blockTimestamp: Int!
+  blockTimestamp: BigInt!
   "The history of the markets borrow index return (Think S&P 500)"
   borrowIndex: BigDecimal!
   "The factor determining interest that goes to reserves"
@@ -411,9 +411,9 @@ interface CTokenTransfer {
   "Account that sent tokens"
   from: Bytes!
   "Block number"
-  blockNumber: Int!
+  blockNumber: BigInt!
   "Block time"
-  blockTime: Int!
+  blockTime: BigInt!
   "The cToken transferred"
   market: Market!
 }
@@ -434,9 +434,9 @@ type TransferEvent implements CTokenTransfer @entity(immutable: true) {
   "Account that sent tokens"
   from: Bytes!
   "Block number"
-  blockNumber: Int!
+  blockNumber: BigInt!
   "Block time"
-  blockTime: Int!
+  blockTime: BigInt!
   "The cToken transferred"
   market: Market!
 }
@@ -457,9 +457,9 @@ type MintEvent implements CTokenTransfer @entity(immutable: true) {
   "Account that sent tokens (CToken contract)"
   from: Bytes!
   "Block number"
-  blockNumber: Int!
+  blockNumber: BigInt!
   "Block time"
-  blockTime: Int!
+  blockTime: BigInt!
   "The cToken transferred"
   market: Market!
   "Underlying token amount transferred"
@@ -482,9 +482,9 @@ type RedeemEvent implements CTokenTransfer @entity(immutable: true) {
   "Account that sent tokens (redeemer)"
   from: Bytes!
   "Block number"
-  blockNumber: Int!
+  blockNumber: BigInt!
   "Block time"
-  blockTime: Int!
+  blockTime: BigInt!
   "The cToken transferred"
   market: Market!
   "Underlying token amount transferred"
@@ -507,9 +507,9 @@ type LiquidationEvent implements CTokenTransfer @entity(immutable: true) {
   "Account being liquidated (borrower)"
   from: Bytes!
   "Block number"
-  blockNumber: Int!
+  blockNumber: BigInt!
   "Block time"
-  blockTime: Int!
+  blockTime: BigInt!
   "cToken that was seized as collateral"
   market: Market!
   "The cToken that was repaid during this liquidation"
@@ -546,9 +546,9 @@ interface UnderlyingTransfer {
   "Account that borrowed the tokens"
   borrower: Bytes!
   "Block number"
-  blockNumber: Int!
+  blockNumber: BigInt!
   "Block time"
-  blockTime: Int!
+  blockTime: BigInt!
   "Symbol of the borrowed underlying asset"
   underlyingSymbol: String!
 }
@@ -570,9 +570,9 @@ type BorrowEvent implements UnderlyingTransfer @entity(immutable: true) {
   "Account that borrowed the tokens"
   borrower: Bytes!
   "Block number"
-  blockNumber: Int!
+  blockNumber: BigInt!
   "Block time"
-  blockTime: Int!
+  blockTime: BigInt!
   "Symbol of the borrowed underlying asset"
   underlyingSymbol: String!
 }
@@ -595,9 +595,9 @@ type RepayEvent implements UnderlyingTransfer @entity(immutable: true) {
   "Account that borrowed the tokens"
   borrower: Bytes!
   "Block number"
-  blockNumber: Int!
+  blockNumber: BigInt!
   "Block time"
-  blockTime: Int!
+  blockTime: BigInt!
   "Symbol of the borrowed underlying asset"
   underlyingSymbol: String!
   "Payer of the borrow funds"

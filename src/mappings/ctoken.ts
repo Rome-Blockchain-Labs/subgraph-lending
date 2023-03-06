@@ -66,8 +66,8 @@ export function handleMint(event: Mint): void {
   mint.amount = cTokenAmount;
   mint.to = event.params.minter;
   mint.from = event.address;
-  mint.blockNumber = event.block.number.toI32();
-  mint.blockTime = event.block.timestamp.toI32();
+  mint.blockNumber = event.block.number;
+  mint.blockTime = event.block.timestamp;
   mint.market = market.id;
   mint.underlyingAmount = underlyingAmount;
   mint.save();
@@ -108,8 +108,8 @@ export function handleRedeem(event: Redeem): void {
   redeem.amount = cTokenAmount;
   redeem.to = event.address;
   redeem.from = event.params.redeemer;
-  redeem.blockNumber = event.block.number.toI32();
-  redeem.blockTime = event.block.timestamp.toI32();
+  redeem.blockNumber = event.block.number;
+  redeem.blockTime = event.block.timestamp;
   redeem.market = market.id;
   redeem.underlyingAmount = underlyingAmount;
   redeem.save();
@@ -179,8 +179,8 @@ export function handleBorrow(event: Borrow): void {
   borrow.amount = borrowAmount;
   borrow.accountBorrows = accountBorrows;
   borrow.borrower = event.params.borrower;
-  borrow.blockNumber = event.block.number.toI32();
-  borrow.blockTime = event.block.timestamp.toI32();
+  borrow.blockNumber = event.block.number;
+  borrow.blockTime = event.block.timestamp;
   borrow.underlyingSymbol = market.underlyingSymbol;
   borrow.save();
 }
@@ -252,8 +252,8 @@ export function handleRepayBorrow(event: RepayBorrow): void {
   repay.amount = repayAmount;
   repay.accountBorrows = accountBorrows;
   repay.borrower = event.params.borrower;
-  repay.blockNumber = event.block.number.toI32();
-  repay.blockTime = event.block.timestamp.toI32();
+  repay.blockNumber = event.block.number;
+  repay.blockTime = event.block.timestamp;
   repay.underlyingSymbol = market.underlyingSymbol;
   repay.payer = event.params.payer;
   repay.save();
@@ -323,8 +323,8 @@ export function handleLiquidateBorrow(event: LiquidateBorrow): void {
   liquidation.amount = cTokenAmount;
   liquidation.to = event.params.liquidator;
   liquidation.from = event.params.borrower;
-  liquidation.blockNumber = event.block.number.toI32();
-  liquidation.blockTime = event.block.timestamp.toI32();
+  liquidation.blockNumber = event.block.number;
+  liquidation.blockTime = event.block.timestamp;
   liquidation.underlyingSymbol = marketRepayToken.underlyingSymbol;
   liquidation.underlyingRepayAmount = underlyingRepayAmount;
   liquidation.market = marketCTokenLiquidated!.id;
@@ -355,8 +355,8 @@ export function handleTransfer(event: Transfer): void {
   if (market == null) {
     market = createMarket(marketID);
   }
-  if (market.accrualBlockNumber != event.block.number.toI32()) {
-    market = updateMarket(event.address, event.block.number.toI32(), event.block.timestamp.toI32());
+  if (market.accrualBlockNumber != event.block.number) {
+    market = updateMarket(event.address, event.block.number, event.block.timestamp);
   }
 
   let amountUnderlying = market.exchangeRate.times(event.params.amount.toBigDecimal().div(cTokenDecimalsBD));
@@ -437,14 +437,14 @@ export function handleTransfer(event: Transfer): void {
   transfer.amount = event.params.amount.toBigDecimal().div(cTokenDecimalsBD);
   transfer.to = event.params.to;
   transfer.from = event.params.from;
-  transfer.blockNumber = event.block.number.toI32();
-  transfer.blockTime = event.block.timestamp.toI32();
+  transfer.blockNumber = event.block.number;
+  transfer.blockTime = event.block.timestamp;
   transfer.market = market.id;
   transfer.save();
 }
 
 export function handleAccrueInterest(event: AccrueInterest): void {
-  updateMarket(event.address, event.block.number.toI32(), event.block.timestamp.toI32());
+  updateMarket(event.address, event.block.number, event.block.timestamp);
 }
 
 export function handleNewReserveFactor(event: NewReserveFactor): void {

@@ -56,8 +56,6 @@ dataSources:
           handler: handleNewCollateralFactor
         - event: NewLiquidationIncentive(uint256,uint256)
           handler: handleNewLiquidationIncentive
-      blockHandlers:
-        - handler: handleNewBlock
 templates:
   - name: CToken
     kind: ethereum/contract

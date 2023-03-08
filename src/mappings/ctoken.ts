@@ -29,6 +29,7 @@ import {
   cTokenDecimalsBD,
   cTokenDecimals,
 } from "./helpers";
+import { updateAccountMarketSnapshot } from './snapshots';
 
 /* Account supplies assets into market and receives cTokens in exchange
  *
@@ -63,6 +64,8 @@ export function handleMint(event: Mint): void {
     .truncate(market.underlyingDecimals);
 
   let mint = new MintEvent(mintID);
+  mint.type = 'Mint';
+  mint.market = market.id;
   mint.amount = cTokenAmount;
   mint.to = event.params.minter;
   mint.from = event.address;
@@ -105,6 +108,8 @@ export function handleRedeem(event: Redeem): void {
     .truncate(market.underlyingDecimals);
 
   let redeem = new RedeemEvent(redeemID);
+  redeem.type = 'Redeem';
+  redeem.market = market.id;
   redeem.amount = cTokenAmount;
   redeem.to = event.address;
   redeem.from = event.params.redeemer;
@@ -170,6 +175,8 @@ export function handleBorrow(event: Borrow): void {
     .truncate(market.underlyingDecimals);
 
   let borrow = new BorrowEvent(borrowID);
+  borrow.type = 'Borrow';
+  borrow.market = market.id;
   borrow.amount = borrowAmount;
   borrow.accountBorrows = accountBorrows;
   borrow.borrower = event.params.borrower;
@@ -236,6 +243,8 @@ export function handleRepayBorrow(event: RepayBorrow): void {
   let repayAmount = repayAmountBD.truncate(market.underlyingDecimals);
 
   let repay = new RepayEvent(repayID);
+  repay.type = 'Repay';
+  repay.market = market.id;
   repay.amount = repayAmount;
   repay.accountBorrows = accountBorrows;
   repay.borrower = event.params.borrower;
@@ -288,7 +297,7 @@ export function handleLiquidateBorrow(event: LiquidateBorrow): void {
     marketRepayToken = createMarket(event.address.toHexString());
   }
   let marketCTokenLiquidated = Market.load(event.params.qiTokenCollateral.toHexString());
-  if (marketRepayToken == null) {
+  if (marketCTokenLiquidated == null) {
     marketCTokenLiquidated = createMarket(event.params.qiTokenCollateral.toHexString());
   }
 
@@ -307,6 +316,9 @@ export function handleLiquidateBorrow(event: LiquidateBorrow): void {
     .truncate(marketRepayToken.underlyingDecimals);
 
   let liquidation = new LiquidationEvent(mintID);
+  liquidation.type = 'Liquidation';
+  liquidation.market = marketCTokenLiquidated.id;
+  liquidation.repayMarket = marketRepayToken.id;
   liquidation.amount = cTokenAmount;
   liquidation.to = event.params.liquidator;
   liquidation.from = event.params.borrower;
@@ -343,7 +355,7 @@ export function handleTransfer(event: Transfer): void {
     market = createMarket(marketID);
   }
   if (market.accrualBlockNumber != event.block.number) {
-    market = updateMarket(event.address, event.block.number, event.block.timestamp);
+    market = updateMarket(event.address, event.block.number, event.block.timestamp, event.block.hash);
   }
 
   let amountUnderlying = market.exchangeRate.times(event.params.amount.toBigDecimal().div(cTokenDecimalsBD));
@@ -379,6 +391,8 @@ export function handleTransfer(event: Transfer): void {
 
     cTokenStatsFrom.totalUnderlyingRedeemed = cTokenStatsFrom.totalUnderlyingRedeemed.plus(amountUnderlyingTruncated);
     cTokenStatsFrom.save();
+
+    updateAccountMarketSnapshot(cTokenStatsFrom, market!, event.block.number, event.block.timestamp);
   }
 
   // Checking if the tx is TO the cToken contract (i.e. this will not run when redeeming)
@@ -413,6 +427,8 @@ export function handleTransfer(event: Transfer): void {
 
     cTokenStatsTo.totalUnderlyingSupplied = cTokenStatsTo.totalUnderlyingSupplied.plus(amountUnderlyingTruncated);
     cTokenStatsTo.save();
+
+    updateAccountMarketSnapshot(cTokenStatsTo, market!, event.block.number, event.block.timestamp);
   }
 
   let transferID = event.transaction.hash
@@ -421,6 +437,8 @@ export function handleTransfer(event: Transfer): void {
     .concat(event.transactionLogIndex.toString());
 
   let transfer = new TransferEvent(transferID);
+  transfer.type = 'Transfer';
+  transfer.market = market.id;
   transfer.amount = event.params.amount.toBigDecimal().div(cTokenDecimalsBD);
   transfer.to = event.params.to;
   transfer.from = event.params.from;
@@ -431,7 +449,7 @@ export function handleTransfer(event: Transfer): void {
 }
 
 export function handleAccrueInterest(event: AccrueInterest): void {
-  updateMarket(event.address, event.block.number, event.block.timestamp);
+  updateMarket(event.address, event.block.number, event.block.timestamp, event.block.hash);
 }
 
 export function handleNewReserveFactor(event: NewReserveFactor): void {

@@ -136,6 +136,9 @@ type Market implements MarketInfo @entity {
   "Underlying token decimal length"
   underlyingDecimals: Int!
 
+  "Accounts that have interacted with this market"
+  accounts: [AccountCToken!]! @derivedFrom(field: "market")
+
   # @yhayun - added specifically for benqi:
   "Underlying token"
   denomination: Token
@@ -145,7 +148,7 @@ type Market implements MarketInfo @entity {
   "All cTokenTransfer events which the token of this market is being transfered (i.e. LiquidationEvents only appear on the Collateral market)"
   cTokenTransfers: [CTokenTransfer!]! @derivedFrom(field: "market")
   "Transfers of the Underlying Token where no market token is being transfered (i.e. Borrow and Repay)"
-  underlyingTransfer: [UnderlyingTransfer!]! @derivedFrom(field: "market")
+  underlyingTransfers: [UnderlyingTransfer!]! @derivedFrom(field: "market")
 
   hourlySnapshots: [MarketHourlySnapshot!]! @derivedFrom(field: "market")
   dailySnapshots: [MarketDailySnapshot!]! @derivedFrom(field: "market")
@@ -162,7 +165,7 @@ type MarketHourlySnapshot implements MarketInfo @entity {
   "UTC timestamp for the beginning of the hour (ex.: timestamp for 01:00:00, 14:00:00, ...)"
   timestamp: BigInt!
   lastBlockNumber: BigInt!
-  lastBlockHash: String!
+  lastBlockHash: Bytes!
 
   ### INTERFACE FIELDS
   #Fields that match compounds API
@@ -225,7 +228,7 @@ type MarketDailySnapshot implements MarketInfo @entity {
   "UTC timestamp for the beginning of the day (ex.: timestamp for Day 1 00:00:00, Day 2 00:00:00, ...)"
   timestamp: BigInt!
   lastBlockNumber: BigInt!
-  lastBlockHash: String!
+  lastBlockHash: Bytes!
 
   ### INTERFACE FIELDS
   #Fields that match compounds API
@@ -277,13 +280,19 @@ type MarketDailySnapshot implements MarketInfo @entity {
   ### END OF INTERFACE FIELDS
 }
 
-type AccountSnapshot @entity(immutable: true) {
+type AccountMarketSnapshot @entity {
+  "AccountId-MarketId"
   id: ID!
-  account: Account!
-  market: Market!
-  blockNumber: Int!
-  supply_amount: BigDecimal!
-  borrow_amount: BigDecimal!
+  accountMarket: AccountCToken!
+  accrualBlockNumber: BigInt
+  blockNumber: BigInt!
+  timestamp: BigInt!
+  totalSupplyAmount: BigDecimal!
+  storedBorrowBalance: BigDecimal!
+  borrowBalanceWithInterest: BigDecimal!
+  marketBorrowIndex: BigDecimal!
+  accountBorrowIndex: BigDecimal!
+  exchangeRate: BigDecimal!
 }
 
 """
@@ -348,6 +357,9 @@ type AccountCToken @entity {
   totalUnderlyingRepaid: BigDecimal!
   "Current borrow balance stored in contract (exclusive of interest since accrualBlockNumber)"
   storedBorrowBalance: BigDecimal!
+
+  "Historical snapshots for this Account-Market association"
+  snapshots: [AccountMarketSnapshot!]! @derivedFrom(field: "accountMarket")
 
   # The following values are added by the JS Wrapper, and must be calculated with the most up
   # to date values based on the block delta for market.exchangeRate and market.borrowIndex

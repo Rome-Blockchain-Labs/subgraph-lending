@@ -1,7 +1,7 @@
 /* eslint-disable prefer-const */ // to satisfy AS compiler
 
 // For each division by 10, add one to exponent to truncate one significant figure
-import { Address, BigDecimal, BigInt, log } from "@graphprotocol/graph-ts";
+import { Address, BigDecimal, BigInt, Bytes, log } from "@graphprotocol/graph-ts";
 import { Market, Comptroller, Token } from "../types/schema";
 // PriceOracle is valid from Comptroller deployment until block 8498421
 import { PriceOracle } from "../types/templates/CToken/PriceOracle";
@@ -10,9 +10,10 @@ import { PriceOracle2 } from "../types/templates/CToken/PriceOracle2";
 import { ERC20 } from "../types/templates/CToken/ERC20";
 import { CToken } from "../types/templates/CToken/CToken";
 
-import { exponentToBigDecimal, mantissaFactor, mantissaFactorBD, cTokenDecimalsBD, zeroBD } from "./helpers";
+import { exponentToBigDecimal, mantissaFactor, mantissaFactorBD, cTokenDecimalsBD, zeroBD, zeroBI } from "./helpers";
 import { MANTISSA_FACTOR, QIAVAX_TOKEN_ADDRESS, WAVAX_TOKEN_ADDRESS } from "./constants";
 import { getOrCreateComptroller } from './comptroller';
+import { saveMarketSnapshots } from './snapshots';
 
 let cUSDCAddress = "0x39aa39c021dfbae8fac545936693ac917d5e7563";
 let cETHAddress = "0x4ddc2d193948926d02f9b1fe9e1daa0718270ed5";
@@ -159,6 +160,7 @@ function getOrCreateMarket(id: string, token: Token): Market {
   let market = Market.load(id);
   if (market == null) {
     market = new Market(id);
+    market.totalRewardsDistributed = [];
     market.totalFeesGenerated = zeroBD;
     market.totalProtocolFeesGenerated = zeroBD;
     market.totalBorrows = zeroBD;
@@ -181,6 +183,8 @@ function getOrCreateMarket(id: string, token: Token): Market {
     market.borrowIndex = zeroBD;
     market.name = "";
     market.symbol = "";
+    market.suppliersCount = 0;
+    market.borrowersCount = 0;
   }
   return market as Market;
 }
@@ -276,7 +280,7 @@ function getETHinUSD(blockNumber: i32): BigDecimal {
 }
 
 // @ts-ignore
-export function updateMarket(marketAddress: Address, blockNumber: BigInt, blockTimestamp: BigInt): Market {
+export function updateMarket(marketAddress: Address, blockNumber: BigInt, blockTimestamp: BigInt, blockHash: Bytes): Market {
   let marketID = marketAddress.toHexString();
   let market = Market.load(marketID);
   if (market == null) {
@@ -400,6 +404,8 @@ export function updateMarket(marketAddress: Address, blockNumber: BigInt, blockT
     //     .truncate(mantissaFactor)
     // }
     market.save();
+
+    saveMarketSnapshots(market!, blockTimestamp, blockNumber, blockHash);
   }
   return market as Market;
 }

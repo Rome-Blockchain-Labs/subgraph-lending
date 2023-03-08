@@ -151,11 +151,12 @@ export function handleBorrow(event: Borrow): void {
 
   let borrowAmountBD = event.params.borrowAmount.toBigDecimal().div(exponentToBigDecimal(market.underlyingDecimals));
 
-  cTokenStats.storedBorrowBalance = event.params.accountBorrows
+  let accountBorrows = event.params.accountBorrows
     .toBigDecimal()
     .div(exponentToBigDecimal(market.underlyingDecimals))
     .truncate(market.underlyingDecimals);
 
+  cTokenStats.storedBorrowBalance = accountBorrows;
   cTokenStats.accountBorrowIndex = market.borrowIndex;
   cTokenStats.totalUnderlyingBorrowed = cTokenStats.totalUnderlyingBorrowed.plus(borrowAmountBD);
   cTokenStats.save();
@@ -165,14 +166,7 @@ export function handleBorrow(event: Borrow): void {
     .concat("-")
     .concat(event.transactionLogIndex.toString());
 
-  let borrowAmount = event.params.borrowAmount
-    .toBigDecimal()
-    .div(exponentToBigDecimal(market.underlyingDecimals))
-    .truncate(market.underlyingDecimals);
-
-  let accountBorrows = event.params.accountBorrows
-    .toBigDecimal()
-    .div(exponentToBigDecimal(market.underlyingDecimals))
+  let borrowAmount = borrowAmountBD
     .truncate(market.underlyingDecimals);
 
   let borrow = new BorrowEvent(borrowID);
@@ -224,11 +218,12 @@ export function handleRepayBorrow(event: RepayBorrow): void {
 
   let repayAmountBD = event.params.repayAmount.toBigDecimal().div(exponentToBigDecimal(market.underlyingDecimals));
 
-  cTokenStats.storedBorrowBalance = event.params.accountBorrows
+  let accountBorrows = event.params.accountBorrows
     .toBigDecimal()
     .div(exponentToBigDecimal(market.underlyingDecimals))
     .truncate(market.underlyingDecimals);
 
+  cTokenStats.storedBorrowBalance = accountBorrows;
   cTokenStats.accountBorrowIndex = market.borrowIndex;
   cTokenStats.totalUnderlyingRepaid = cTokenStats.totalUnderlyingRepaid.plus(repayAmountBD);
   cTokenStats.save();
@@ -238,15 +233,7 @@ export function handleRepayBorrow(event: RepayBorrow): void {
     .concat("-")
     .concat(event.transactionLogIndex.toString());
 
-  let repayAmount = event.params.repayAmount
-    .toBigDecimal()
-    .div(exponentToBigDecimal(market.underlyingDecimals))
-    .truncate(market.underlyingDecimals);
-
-  let accountBorrows = event.params.accountBorrows
-    .toBigDecimal()
-    .div(exponentToBigDecimal(market.underlyingDecimals))
-    .truncate(market.underlyingDecimals);
+  let repayAmount = repayAmountBD.truncate(market.underlyingDecimals);
 
   let repay = new RepayEvent(repayID);
   repay.amount = repayAmount;

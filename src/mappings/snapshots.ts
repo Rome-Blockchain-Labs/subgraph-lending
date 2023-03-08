@@ -162,11 +162,15 @@ function fillMarketSnapshotValues<S extends MarketDailySnapshot>(snapshot: S, ma
 }
 
 function extractHourlyTimestamp(timestamp: BigInt): BigInt {
-  return timestamp.div(SECONDS_PER_HOUR);
+  return truncateTimestamp(timestamp, SECONDS_PER_HOUR);
 }
 
 function extractDailyTimestamp(timestamp: BigInt): BigInt {
-  return timestamp.div(SECONDS_PER_DAY);
+  return truncateTimestamp(timestamp, SECONDS_PER_DAY);
+}
+
+function truncateTimestamp(timestamp: BigInt, seconds: BigInt): BigInt {
+  return timestamp.div(seconds).plus(BigInt.fromI32(1)).times(seconds);
 }
 
 function getMarketSnapshotId(market: Market, timestamp: BigInt): string {

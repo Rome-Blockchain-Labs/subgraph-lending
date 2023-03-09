@@ -174,5 +174,5 @@ function truncateTimestamp(timestamp: BigInt, seconds: BigInt): BigInt {
 }
 
 function getMarketSnapshotId(market: Market, timestamp: BigInt): string {
-  return market.id.concat(timestamp.toString());
+  return market.id.concat('-').concat(timestamp.toString());
 }

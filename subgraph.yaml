@@ -20,7 +20,7 @@ dataSources:
         - Account
         - AccountCToken
         - AccountCTokenTransaction
-        - AccountSnapshot
+        - AccountMarketSnapshot
         - Comptroller
         - Market
         - MarketDailySnapshot

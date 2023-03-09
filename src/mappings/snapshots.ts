@@ -170,7 +170,7 @@ function extractDailyTimestamp(timestamp: BigInt): BigInt {
 }
 
 function truncateTimestamp(timestamp: BigInt, seconds: BigInt): BigInt {
-  return timestamp.div(seconds).plus(BigInt.fromI32(1)).times(seconds);
+  return timestamp.div(seconds).times(seconds);
 }
 
 function getMarketSnapshotId(market: Market, timestamp: BigInt): string {

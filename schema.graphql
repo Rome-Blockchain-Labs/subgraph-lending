@@ -139,16 +139,11 @@ type Market implements MarketInfo @entity {
   "Accounts that have interacted with this market"
   accounts: [AccountCToken!]! @derivedFrom(field: "market")
 
+  marketEvents: [AccountCTokenEvent!]! @derivedFrom(field: "market")
+
   # @yhayun - added specifically for benqi:
   "Underlying token"
   denomination: Token
-  """Since CTokenTransfer uses the Seized market as the main market, 
-  this field enables the search of liquidation events where this is the market being repaid"""
-  repaymentsThroughLiquidation: [LiquidationEvent!]! @derivedFrom(field: "repayMarket")
-  "All cTokenTransfer events which the token of this market is being transfered (i.e. LiquidationEvents only appear on the Collateral market)"
-  cTokenTransfers: [CTokenTransfer!]! @derivedFrom(field: "market")
-  "Transfers of the Underlying Token where no market token is being transfered (i.e. Borrow and Repay)"
-  underlyingTransfers: [UnderlyingTransfer!]! @derivedFrom(field: "market")
 
   hourlySnapshots: [MarketHourlySnapshot!]! @derivedFrom(field: "market")
   dailySnapshots: [MarketDailySnapshot!]! @derivedFrom(field: "market")
@@ -311,6 +306,8 @@ type Account @entity {
   "True if user has ever borrowed"
   hasBorrowed: Boolean!
 
+  accountEvents: [AccountCTokenEvent!]! @derivedFrom(field: "account")
+
   # The following values are added by the JS Wrapper, and must be calculated with the most up
   # to date values based on the block delta for market.exchangeRate and market.borrowIndex
   # They do not need to be in the schema, but they will show up in the explorer playground
@@ -336,8 +333,6 @@ type AccountCToken @entity {
   symbol: String!
   "Relation to user"
   account: Account!
-  "Transactions data"
-  transactions: [AccountCTokenTransaction!]! @derivedFrom(field: "account")
   "Block number this asset was updated at in the contract"
   accrualBlockNumber: BigInt!
   "True if user is entered, false if they are exited"
@@ -361,6 +356,8 @@ type AccountCToken @entity {
   "Historical snapshots for this Account-Market association"
   snapshots: [AccountMarketSnapshot!]! @derivedFrom(field: "accountMarket")
 
+  tokenEvents: [AccountCTokenEvent!]! @derivedFrom(field: "accountCToken")
+
   # The following values are added by the JS Wrapper, and must be calculated with the most up
   # to date values based on the block delta for market.exchangeRate and market.borrowIndex
   # They do not need to be in the schema, but they will show up in the explorer playground
@@ -381,239 +378,266 @@ type AccountCToken @entity {
 }
 
 """
-Auxiliary entity for AccountCToken
+Relationship entity to map between events with Account and Market entities
 """
-type AccountCTokenTransaction @entity {
+type AccountCTokenEvent @entity(immutable: true) {
+  "AccountCToken id concatenated with event id"
   id: ID!
-
-  account: AccountCToken!
-
-  tx_hash: Bytes!
-
-  timestamp: BigInt!
-
-  block: BigInt!
-
-  logIndex: BigInt!
+  account: Account!
+  market: Market!
+  event: CTokenEvent!
+  "This is redundant with the other two, but allows us to add a relation in the AccountCToken entity as well"
+  accountCToken: AccountCToken!
 }
 
 """
-Types of CTokenTransfers
+Types of CTokenEvents
 """
-enum CTokenTransferType {
+enum CTokenEventType {
   Transfer
   Mint
   Redeem
+  Borrow
+  Repay
   Liquidation
+  MarketEntered
+  MarketExited
 }
 
 """
-An interface for a transfer of any cToken. TransferEvent, MintEvent,
-RedeemEvent, and LiquidationEvent all use this interface
+An interface for an event of any cToken. TransferEvent, MintEvent,
+RedeemEvent, BorrowEvent, RepayEvent, MarketEnteredEvent, MarketExitedEvent and LiquidationEvent all use this interface
 """
-interface CTokenTransfer {
+interface CTokenEvent {
   "Transaction hash concatenated with log index"
   id: ID!
   "Type of the specific transfer"
-  type: CTokenTransferType!
-  "cTokens transferred"
-  amount: BigDecimal!
-  "Account that received tokens"
-  to: Bytes!
-  "Account that sent tokens"
-  from: Bytes!
+  type: CTokenEventType!
+  "The tx_hash that contains this event"
+  tx_hash: Bytes!
+  "The index of the associated log inside the transaction that corresponds to this event"
+  logIndex: BigInt!
   "Block number"
   blockNumber: BigInt!
   "Block time"
   blockTime: BigInt!
-  "The cToken transferred"
-  market: Market!
 }
 
 """
 TransferEvent will be stored for every mint, redeem, liquidation, and any normal
 transfer between two accounts.
 """
-type TransferEvent implements CTokenTransfer @entity(immutable: true) {
+type TransferEvent implements CTokenEvent @entity(immutable: true) {
   "Transaction hash concatenated with log index"
   id: ID!
   "Type of the specific transfer"
-  type: CTokenTransferType!
+  type: CTokenEventType!
+  "The tx_hash that contains this event"
+  tx_hash: Bytes!
+  "The index of the associated log inside the transaction that corresponds to this event"
+  logIndex: BigInt!
+  "The cToken transferred"
+  market: Market!
+  "Account that received tokens"
+  to: Account
+  "Account that sent tokens"
+  from: Account
   "cTokens transferred"
   amount: BigDecimal!
-  "Account that received tokens"
-  to: Bytes!
-  "Account that sent tokens"
-  from: Bytes!
   "Block number"
   blockNumber: BigInt!
   "Block time"
   blockTime: BigInt!
-  "The cToken transferred"
-  market: Market!
 }
 
 """
 MintEvent stores information for mints. From address will always be a cToken
 market address
 """
-type MintEvent implements CTokenTransfer @entity(immutable: true) {
+type MintEvent implements CTokenEvent @entity(immutable: true) {
   "Transaction hash concatenated with log index"
   id: ID!
   "Type of the specific transfer"
-  type: CTokenTransferType!
+  type: CTokenEventType!
+  "The tx_hash that contains this event"
+  tx_hash: Bytes!
+  "The index of the associated log inside the transaction that corresponds to this event"
+  logIndex: BigInt!
+  "The cToken transferred"
+  market: Market!
+  "Account that received tokens (minter)"
+  user: Account!
   "cTokens transferred"
   amount: BigDecimal!
-  "Account that received tokens (minter)"
-  to: Bytes!
-  "Account that sent tokens (CToken contract)"
-  from: Bytes!
+  "Underlying token amount transferred"
+  underlyingAmount: BigDecimal
   "Block number"
   blockNumber: BigInt!
   "Block time"
   blockTime: BigInt!
-  "The cToken transferred"
-  market: Market!
-  "Underlying token amount transferred"
-  underlyingAmount: BigDecimal
 }
 
 """
 RedeemEvent stores information for redeems. To address will always be a
 cToken market address
 """
-type RedeemEvent implements CTokenTransfer @entity(immutable: true) {
+type RedeemEvent implements CTokenEvent @entity(immutable: true) {
   "Transaction hash concatenated with log index"
   id: ID!
   "Type of the specific transfer"
-  type: CTokenTransferType!
+  type: CTokenEventType!
+  "The tx_hash that contains this event"
+  tx_hash: Bytes!
+  "The index of the associated log inside the transaction that corresponds to this event"
+  logIndex: BigInt!
+  "The cToken transferred"
+  market: Market!
+  "Account that sent tokens (redeemer)"
+  user: Account!
   "cTokens transferred"
   amount: BigDecimal!
-  "Account that received tokens (CToken contract)"
-  to: Bytes!
-  "Account that sent tokens (redeemer)"
-  from: Bytes!
+  "Underlying token amount transferred"
+  underlyingAmount: BigDecimal
   "Block number"
   blockNumber: BigInt!
   "Block time"
   blockTime: BigInt!
-  "The cToken transferred"
-  market: Market!
-  "Underlying token amount transferred"
-  underlyingAmount: BigDecimal
 }
 
 """
 LiquidationEvent stores information for liquidations. The event is emitted from
 the cToken market address.
 """
-type LiquidationEvent implements CTokenTransfer @entity(immutable: true) {
+type LiquidationEvent implements CTokenEvent @entity(immutable: true) {
   "Transaction hash concatenated with log index"
   id: ID!
   "Type of the specific transfer"
-  type: CTokenTransferType!
-  "cTokens seized"
-  amount: BigDecimal!
-  "Liquidator receiving tokens"
-  to: Bytes!
-  "Account being liquidated (borrower)"
-  from: Bytes!
-  "Block number"
-  blockNumber: BigInt!
-  "Block time"
-  blockTime: BigInt!
+  type: CTokenEventType!
+  "The tx_hash that contains this event"
+  tx_hash: Bytes!
+  "The index of the associated log inside the transaction that corresponds to this event"
+  logIndex: BigInt!
   "cToken that was seized as collateral"
-  market: Market!
+  seizedMarket: Market!
   "The cToken that was repaid during this liquidation"
   repayMarket: Market!
+  "Liquidator receiving tokens"
+  liquidator: Account!
+  "Account being liquidated (borrower)"
+  borrower: Account!
+  "cTokens seized"
+  seizedTokens: BigDecimal!
   "Symbol of the underlying asset repaid through liquidation"
   underlyingSymbol: String!
   "Underlying cToken amount that was repaid by liquidator"
   underlyingRepayAmount: BigDecimal!
-}
-
-"""
-Types of UnderlyingTransfer
-"""
-enum UnderlyingTransferType {
-  Borrow
-  Repay
-}
-
-"""
-Underlying transfers are transfers of underlying collateral for both borrows
-and repays
-"""
-interface UnderlyingTransfer {
-  "Transaction hash concatenated with log index"
-  id: ID!
-  "Specific type of the implementation"
-  type: UnderlyingTransferType!
-  "The cToken where the lending happened"
-  market: Market!
-  "Amount of underlying borrowed"
-  amount: BigDecimal!
-  "Total borrows of this asset the account has"
-  accountBorrows: BigDecimal!
-  "Account that borrowed the tokens"
-  borrower: Bytes!
   "Block number"
   blockNumber: BigInt!
   "Block time"
   blockTime: BigInt!
-  "Symbol of the borrowed underlying asset"
-  underlyingSymbol: String!
 }
 
 """
 BorrowEvent stores information for borrows
 """
-type BorrowEvent implements UnderlyingTransfer @entity(immutable: true) {
+type BorrowEvent implements CTokenEvent @entity(immutable: true) {
   "Transaction hash concatenated with log index"
   id: ID!
+  "Specific type of the implementation"
+  type: CTokenEventType!
+  "The tx_hash that contains this event"
+  tx_hash: Bytes!
+  "The index of the associated log inside the transaction that corresponds to this event"
+  logIndex: BigInt!
   "Market from which the token is being borrowed"
   market: Market!
-  "Specific type of the implementation"
-  type: UnderlyingTransferType!
+  "Account that borrowed the tokens"
+  borrower: Account!
   "Amount of underlying borrowed"
   amount: BigDecimal!
   "Total borrows of this asset the account has"
   accountBorrows: BigDecimal!
-  "Account that borrowed the tokens"
-  borrower: Bytes!
+  "Symbol of the borrowed underlying asset"
+  underlyingSymbol: String!
   "Block number"
   blockNumber: BigInt!
   "Block time"
   blockTime: BigInt!
-  "Symbol of the borrowed underlying asset"
-  underlyingSymbol: String!
 }
 
 """
 RepayEvent stores information for repays. Payer is not always the same as
 borrower, such as in the event of a Liquidation
 """
-type RepayEvent implements UnderlyingTransfer @entity(immutable: true) {
+type RepayEvent implements CTokenEvent @entity(immutable: true) {
   "Transaction hash concatenated with log index"
   id: ID!
+  "Specific type of the implementation"
+  type: CTokenEventType!
+  "The tx_hash that contains this event"
+  tx_hash: Bytes!
+  "The index of the associated log inside the transaction that corresponds to this event"
+  logIndex: BigInt!
   "Market to which the token is being repaid"
   market: Market!
-  "Specific type of the implementation"
-  type: UnderlyingTransferType!
+  "Account that borrowed the tokens"
+  borrower: Account!
+  "Payer of the borrow funds"
+  payer: Account!
   "Amount of underlying repaid"
   amount: BigDecimal!
   "Total borrows of this asset the account has"
   accountBorrows: BigDecimal!
-  "Account that borrowed the tokens"
-  borrower: Bytes!
+  "Symbol of the borrowed underlying asset"
+  underlyingSymbol: String!
   "Block number"
   blockNumber: BigInt!
   "Block time"
   blockTime: BigInt!
-  "Symbol of the borrowed underlying asset"
-  underlyingSymbol: String!
-  "Payer of the borrow funds"
-  payer: Bytes!
+}
+
+"""
+MarketEnteredEvent stores information for markets activated as collateral.
+"""
+type MarketEnteredEvent implements CTokenEvent @entity(immutable: true) {
+  "Transaction hash concatenated with log index"
+  id: ID!
+  "Specific type of the implementation"
+  type: CTokenEventType!
+  "The tx_hash that contains this event"
+  tx_hash: Bytes!
+  "The index of the associated log inside the transaction that corresponds to this event"
+  logIndex: BigInt!
+  "Market to which the token is being repaid"
+  market: Market!
+  "Account that borrowed the tokens"
+  account: Account!
+  "Block number"
+  blockNumber: BigInt!
+  "Block time"
+  blockTime: BigInt!
+}
+
+"""
+MarketExitedEvent stores information for markets deactivated as collateral.
+"""
+type MarketExitedEvent implements CTokenEvent @entity(immutable: true) {
+  "Transaction hash concatenated with log index"
+  id: ID!
+  "Specific type of the implementation"
+  type: CTokenEventType!
+  "The tx_hash that contains this event"
+  tx_hash: Bytes!
+  "The index of the associated log inside the transaction that corresponds to this event"
+  logIndex: BigInt!
+  "Market to which the token is being repaid"
+  market: Market!
+  "Account that borrowed the tokens"
+  account: Account!
+  "Block number"
+  blockNumber: BigInt!
+  "Block time"
+  blockTime: BigInt!
 }
 
 type Token @entity(immutable: true) {

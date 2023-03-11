@@ -1,8 +1,8 @@
 /* eslint-disable prefer-const */ // to satisfy AS compiler
 
 // For each division by 10, add one to exponent to truncate one significant figure
-import { BigDecimal, BigInt, Bytes, Address } from "@graphprotocol/graph-ts";
-import { AccountCToken, Account, AccountCTokenTransaction } from "../types/schema";
+import { BigDecimal, BigInt } from "@graphprotocol/graph-ts";
+import { AccountCToken, Account, AccountCTokenEvent } from "../types/schema";
 
 // @ts-ignore
 export function exponentToBigDecimal(decimals: i32): BigDecimal {
@@ -55,44 +55,45 @@ export function updateCommonCTokenStats(
   marketID: string,
   marketSymbol: string,
   accountID: string,
-  tx_hash: Bytes,
-  timestamp: BigInt,
-  blockNumber: BigInt,
-  logIndex: BigInt
+  blockNumber: BigInt
 ): AccountCToken {
-  let cTokenStatsID = marketID.concat("-").concat(accountID);
+  let cTokenStatsID = getAccountCTokenId(marketID, accountID);
   let cTokenStats = AccountCToken.load(cTokenStatsID);
   if (cTokenStats == null) {
     cTokenStats = createAccountCToken(cTokenStatsID, marketSymbol, accountID, marketID);
   }
-  getOrCreateAccountCTokenTransaction(cTokenStatsID, tx_hash, timestamp, blockNumber, logIndex);
   cTokenStats.accrualBlockNumber = blockNumber;
   return cTokenStats as AccountCToken;
 }
 
-export function getOrCreateAccountCTokenTransaction(
-  accountID: string,
-  tx_hash: Bytes,
-  timestamp: BigInt,
-  block: BigInt,
-  logIndex: BigInt
-): AccountCTokenTransaction {
-  let id = accountID
-    .concat("-")
-    .concat(tx_hash.toHexString())
-    .concat("-")
-    .concat(logIndex.toString());
-  let transaction = AccountCTokenTransaction.load(id);
+export function getAccountCTokenId(marketID: string, accountID: string): string {
+  return marketID.concat("-").concat(accountID);
+}
 
-  if (transaction == null) {
-    transaction = new AccountCTokenTransaction(id);
-    transaction.account = accountID;
-    transaction.tx_hash = tx_hash;
-    transaction.timestamp = timestamp;
-    transaction.block = block;
-    transaction.logIndex = logIndex;
-    transaction.save();
+export function saveAccountCTokenEvent(
+  marketId: string,
+  accountId: string,
+  eventId: string
+): AccountCTokenEvent {
+  let accountCTokenId = getAccountCTokenId(marketId, accountId);
+  
+  let id = accountCTokenId
+    .concat("-")
+    .concat(eventId);
+  
+  let accountCTokenEvent = AccountCTokenEvent.load(id);
+
+  if (accountCTokenEvent != null) {
+    return accountCTokenEvent!;
   }
+  
+  accountCTokenEvent = new AccountCTokenEvent(id);
 
-  return transaction as AccountCTokenTransaction;
+  accountCTokenEvent.account = accountId;
+  accountCTokenEvent.market = marketId;
+  accountCTokenEvent.accountCToken = accountCTokenId;
+  accountCTokenEvent.event = eventId;
+  accountCTokenEvent.save();
+
+  return accountCTokenEvent!;
 }

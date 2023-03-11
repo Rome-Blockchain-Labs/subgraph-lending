@@ -19,6 +19,7 @@ import {
   TransferEvent,
   BorrowEvent,
   RepayEvent,
+  AccountCToken,
 } from "../types/schema";
 
 import { createMarket, updateMarket } from "./markets";
@@ -28,8 +29,12 @@ import {
   exponentToBigDecimal,
   cTokenDecimalsBD,
   cTokenDecimals,
+  saveAccountCTokenEvent,
+  createAccountCToken,
+  getAccountCTokenId,
 } from "./helpers";
 import { updateAccountMarketSnapshot } from './snapshots';
+import { ethereum } from '@graphprotocol/graph-ts';
 
 /* Account supplies assets into market and receives cTokens in exchange
  *
@@ -49,10 +54,7 @@ export function handleMint(event: Mint): void {
   if (market == null) {
     market = createMarket(event.address.toHexString());
   }
-  let mintID = event.transaction.hash
-    .toHexString()
-    .concat("-")
-    .concat(event.transactionLogIndex.toString());
+  let mintID = getCTokenEventId(event);
 
   let cTokenAmount = event.params.mintTokens
     .toBigDecimal()
@@ -66,14 +68,16 @@ export function handleMint(event: Mint): void {
   let mint = new MintEvent(mintID);
   mint.type = 'Mint';
   mint.market = market.id;
-  mint.amount = cTokenAmount;
-  mint.to = event.params.minter;
-  mint.from = event.address;
   mint.blockNumber = event.block.number;
   mint.blockTime = event.block.timestamp;
-  mint.market = market.id;
+  mint.tx_hash = event.transaction.hash;
+  mint.logIndex = event.transactionLogIndex;
+  mint.amount = cTokenAmount;
+  mint.user = event.params.minter.toHexString();
   mint.underlyingAmount = underlyingAmount;
   mint.save();
+
+  saveAccountCTokenEvent(market.id, mint.user, mint.id);
 }
 
 /*  Account supplies cTokens into market and receives underlying asset in exchange
@@ -93,10 +97,7 @@ export function handleRedeem(event: Redeem): void {
   if (market == null) {
     market = createMarket(event.address.toHexString());
   }
-  let redeemID = event.transaction.hash
-    .toHexString()
-    .concat("-")
-    .concat(event.transactionLogIndex.toString());
+  let redeemID = getCTokenEventId(event);
 
   let cTokenAmount = event.params.redeemTokens
     .toBigDecimal()
@@ -110,14 +111,16 @@ export function handleRedeem(event: Redeem): void {
   let redeem = new RedeemEvent(redeemID);
   redeem.type = 'Redeem';
   redeem.market = market.id;
-  redeem.amount = cTokenAmount;
-  redeem.to = event.address;
-  redeem.from = event.params.redeemer;
   redeem.blockNumber = event.block.number;
   redeem.blockTime = event.block.timestamp;
-  redeem.market = market.id;
+  redeem.tx_hash = event.transaction.hash;
+  redeem.logIndex = event.transactionLogIndex;
+  redeem.amount = cTokenAmount;
+  redeem.user = event.params.redeemer.toHexString();
   redeem.underlyingAmount = underlyingAmount;
   redeem.save();
+
+  saveAccountCTokenEvent(market.id, redeem.user, redeem.id);
 }
 
 /* Borrow assets from the protocol. All values either ETH or ERC20
@@ -148,10 +151,7 @@ export function handleBorrow(event: Borrow): void {
     market.id,
     market.symbol,
     accountID,
-    event.transaction.hash,
-    event.block.timestamp,
-    event.block.number,
-    event.logIndex
+    event.block.number
   );
 
   let borrowAmountBD = event.params.borrowAmount.toBigDecimal().div(exponentToBigDecimal(market.underlyingDecimals));
@@ -166,10 +166,7 @@ export function handleBorrow(event: Borrow): void {
   cTokenStats.totalUnderlyingBorrowed = cTokenStats.totalUnderlyingBorrowed.plus(borrowAmountBD);
   cTokenStats.save();
 
-  let borrowID = event.transaction.hash
-    .toHexString()
-    .concat("-")
-    .concat(event.transactionLogIndex.toString());
+  let borrowID = getCTokenEventId(event);
 
   let borrowAmount = borrowAmountBD
     .truncate(market.underlyingDecimals);
@@ -177,13 +174,24 @@ export function handleBorrow(event: Borrow): void {
   let borrow = new BorrowEvent(borrowID);
   borrow.type = 'Borrow';
   borrow.market = market.id;
-  borrow.amount = borrowAmount;
-  borrow.accountBorrows = accountBorrows;
-  borrow.borrower = event.params.borrower;
   borrow.blockNumber = event.block.number;
   borrow.blockTime = event.block.timestamp;
+  borrow.tx_hash = event.transaction.hash;
+  borrow.logIndex = event.transactionLogIndex;
+  borrow.amount = borrowAmount;
+  borrow.accountBorrows = accountBorrows;
+  borrow.borrower = event.params.borrower.toHexString();
   borrow.underlyingSymbol = market.underlyingSymbol;
   borrow.save();
+
+  saveAccountCTokenEvent(market.id, borrow.borrower, borrow.id);
+}
+
+export function getCTokenEventId(event: ethereum.Event): string {
+  return event.transaction.hash
+    .toHexString()
+    .concat("-")
+    .concat(event.transactionLogIndex.toString());
 }
 
 /* Repay some amount borrowed. Anyone can repay anyones balance
@@ -217,10 +225,7 @@ export function handleRepayBorrow(event: RepayBorrow): void {
     market.id,
     market.symbol,
     accountID,
-    event.transaction.hash,
-    event.block.timestamp,
-    event.block.number,
-    event.logIndex
+    event.block.number
   );
 
   let repayAmountBD = event.params.repayAmount.toBigDecimal().div(exponentToBigDecimal(market.underlyingDecimals));
@@ -235,24 +240,49 @@ export function handleRepayBorrow(event: RepayBorrow): void {
   cTokenStats.totalUnderlyingRepaid = cTokenStats.totalUnderlyingRepaid.plus(repayAmountBD);
   cTokenStats.save();
 
-  let repayID = event.transaction.hash
-    .toHexString()
-    .concat("-")
-    .concat(event.transactionLogIndex.toString());
+  let repayID = getCTokenEventId(event);
 
   let repayAmount = repayAmountBD.truncate(market.underlyingDecimals);
 
   let repay = new RepayEvent(repayID);
   repay.type = 'Repay';
   repay.market = market.id;
-  repay.amount = repayAmount;
-  repay.accountBorrows = accountBorrows;
-  repay.borrower = event.params.borrower;
   repay.blockNumber = event.block.number;
   repay.blockTime = event.block.timestamp;
+  repay.tx_hash = event.transaction.hash;
+  repay.logIndex = event.transactionLogIndex;
+  repay.amount = repayAmount;
+  repay.accountBorrows = accountBorrows;
+  repay.borrower = event.params.borrower.toHexString();
+  repay.payer = event.params.payer.toHexString();
   repay.underlyingSymbol = market.underlyingSymbol;
-  repay.payer = event.params.payer;
   repay.save();
+
+  saveAccountCTokenEvent(market.id, repay.borrower, repay.id);
+
+  // Ensure account and accountCToken for payer
+  if (repay.borrower != repay.payer) {
+    let payerAccount = Account.load(repay.payer);
+    if (payerAccount == null) {
+      createAccount(repay.payer);
+    }
+      
+    let payerCTokenStatsID = getAccountCTokenId(market.id, repay.payer);
+
+    let payerCTokenStats = AccountCToken.load(payerCTokenStatsID);
+
+    if (payerCTokenStats == null) {
+      payerCTokenStats = createAccountCToken(
+        payerCTokenStatsID,
+        market.symbol,
+        repay.payer,
+        market.id
+      );
+      payerCTokenStats.save();
+    }
+
+    saveAccountCTokenEvent(market.id, repay.payer, repay.id);
+  }
 }
 
 /*
@@ -269,7 +299,7 @@ export function handleRepayBorrow(event: RepayBorrow): void {
  *    When calling this function, event RepayBorrow, and event Transfer will be called every
  *    time. This means we can ignore repayAmount. Seize tokens only changes state
  *    of the cTokens, which is covered by transfer. Therefore we only
- *    add liquidation counts in this handler.
+ *    add liquidation counts in this handler. We can also ignore the creation of AccountCToken for the liquidator.
  */
 export function handleLiquidateBorrow(event: LiquidateBorrow): void {
   let liquidatorID = event.params.liquidator.toHex();
@@ -301,10 +331,7 @@ export function handleLiquidateBorrow(event: LiquidateBorrow): void {
     marketCTokenLiquidated = createMarket(event.params.qiTokenCollateral.toHexString());
   }
 
-  let mintID = event.transaction.hash
-    .toHexString()
-    .concat("-")
-    .concat(event.transactionLogIndex.toString());
+  let liquidationId = getCTokenEventId(event);
 
   let cTokenAmount = event.params.seizeTokens
     .toBigDecimal()
@@ -315,20 +342,25 @@ export function handleLiquidateBorrow(event: LiquidateBorrow): void {
     .div(exponentToBigDecimal(marketRepayToken.underlyingDecimals))
     .truncate(marketRepayToken.underlyingDecimals);
 
-  let liquidation = new LiquidationEvent(mintID);
+  let liquidation = new LiquidationEvent(liquidationId);
   liquidation.type = 'Liquidation';
-  liquidation.market = marketCTokenLiquidated.id;
-  liquidation.repayMarket = marketRepayToken.id;
-  liquidation.amount = cTokenAmount;
-  liquidation.to = event.params.liquidator;
-  liquidation.from = event.params.borrower;
   liquidation.blockNumber = event.block.number;
   liquidation.blockTime = event.block.timestamp;
+  liquidation.tx_hash = event.transaction.hash;
+  liquidation.logIndex = event.transactionLogIndex;
+  liquidation.seizedMarket = marketCTokenLiquidated.id;
+  liquidation.repayMarket = marketRepayToken.id;
+  liquidation.seizedTokens = cTokenAmount;
+  liquidation.liquidator = event.params.liquidator.toHexString();
+  liquidation.borrower = event.params.borrower.toHexString();
   liquidation.underlyingSymbol = marketRepayToken.underlyingSymbol;
   liquidation.underlyingRepayAmount = underlyingRepayAmount;
-  liquidation.market = marketCTokenLiquidated!.id;
-  liquidation.repayMarket = marketRepayToken.id;
   liquidation.save();
+
+  saveAccountCTokenEvent(marketCTokenLiquidated.id, liquidation.borrower, liquidation.id);
+  saveAccountCTokenEvent(marketCTokenLiquidated.id, liquidation.liquidator, liquidation.id);
+  saveAccountCTokenEvent(marketRepayToken.id, liquidation.borrower, liquidation.id);
+  saveAccountCTokenEvent(marketRepayToken.id, liquidation.liquidator, liquidation.id);
 }
 
 /* Transferring of cTokens
@@ -376,10 +408,7 @@ export function handleTransfer(event: Transfer): void {
       market.id,
       market.symbol,
       accountFromID,
-      event.transaction.hash,
-      event.block.timestamp,
-      event.block.number,
-      event.logIndex
+      event.block.number
     );
 
     cTokenStatsFrom.cTokenBalance = cTokenStatsFrom.cTokenBalance.minus(
@@ -412,10 +441,7 @@ export function handleTransfer(event: Transfer): void {
       market.id,
       market.symbol,
       accountToID,
-      event.transaction.hash,
-      event.block.timestamp,
       event.block.number,
-      event.logIndex
     );
 
     cTokenStatsTo.cTokenBalance = cTokenStatsTo.cTokenBalance.plus(
@@ -431,21 +457,22 @@ export function handleTransfer(event: Transfer): void {
     updateAccountMarketSnapshot(cTokenStatsTo, market!, event.block.number, event.block.timestamp);
   }
 
-  let transferID = event.transaction.hash
-    .toHexString()
-    .concat("-")
-    .concat(event.transactionLogIndex.toString());
+  let transferID = getCTokenEventId(event);
 
   let transfer = new TransferEvent(transferID);
   transfer.type = 'Transfer';
   transfer.market = market.id;
-  transfer.amount = event.params.amount.toBigDecimal().div(cTokenDecimalsBD);
-  transfer.to = event.params.to;
-  transfer.from = event.params.from;
   transfer.blockNumber = event.block.number;
   transfer.blockTime = event.block.timestamp;
-  transfer.market = market.id;
+  transfer.tx_hash = event.transaction.hash;
+  transfer.logIndex = event.transactionLogIndex;
+  transfer.amount = event.params.amount.toBigDecimal().div(cTokenDecimalsBD);
+  transfer.to = event.params.to.toHexString();
+  transfer.from = event.params.from.toHexString();
   transfer.save();
+    
+  saveAccountCTokenEvent(market.id, transfer.from, transfer.id);
+  saveAccountCTokenEvent(market.id, transfer.to, transfer.id);
 }
 
 export function handleAccrueInterest(event: AccrueInterest): void {

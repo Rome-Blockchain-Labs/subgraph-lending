@@ -11,10 +11,11 @@ import {
 } from "../types/Comptroller/Comptroller";
 import { Address, ethereum } from "@graphprotocol/graph-ts";
 import { CToken } from "../types/templates";
-import { Market, Comptroller, Account } from "../types/schema";
-import { mantissaFactorBD, updateCommonCTokenStats, createAccount } from "./helpers";
+import { Market, Comptroller, Account, MarketEnteredEvent, MarketExitedEvent } from "../types/schema";
+import { mantissaFactorBD, updateCommonCTokenStats, createAccount, saveAccountCTokenEvent } from "./helpers";
 import { createMarket } from "./markets";
 import { COMPTROLLER_ADDRESS } from "./constants";
+import { getCTokenEventId } from './ctoken';
 
 export function handleMarketListed(event: MarketListed): void {
   // Dynamically index all new listed tokens
@@ -39,13 +40,24 @@ export function handleMarketEntered(event: MarketEntered): void {
       market.id,
       market.symbol,
       accountID,
-      event.transaction.hash,
-      event.block.timestamp,
-      event.block.number,
-      event.logIndex
+      event.block.number
     );
     cTokenStats.enteredMarket = true;
     cTokenStats.save();
+
+    let eventId = getCTokenEventId(event);
+
+    let marketEnteredEvent = new MarketEnteredEvent(eventId);
+    marketEnteredEvent.type = 'MarketEntered';
+    marketEnteredEvent.market = market.id;
+    marketEnteredEvent.account = accountID;
+    marketEnteredEvent.blockNumber = event.block.number;
+    marketEnteredEvent.blockTime = event.block.timestamp;
+    marketEnteredEvent.tx_hash = event.transaction.hash;
+    marketEnteredEvent.logIndex = event.transactionLogIndex;
+    marketEnteredEvent.save();
+
+    saveAccountCTokenEvent(cTokenStats.market, cTokenStats.account, marketEnteredEvent.id);
   }
 }
 
@@ -65,13 +77,24 @@ export function handleMarketExited(event: MarketExited): void {
       market.id,
       market.symbol,
       accountID,
-      event.transaction.hash,
-      event.block.timestamp,
-      event.block.number,
-      event.logIndex
+      event.block.number
     );
     cTokenStats.enteredMarket = false;
     cTokenStats.save();
+
+    let eventId = getCTokenEventId(event);
+
+    let marketExitedEvent = new MarketExitedEvent(eventId);
+    marketExitedEvent.type = 'MarketExited';
+    marketExitedEvent.market = market.id;
+    marketExitedEvent.account = accountID;
+    marketExitedEvent.blockNumber = event.block.number;
+    marketExitedEvent.blockTime = event.block.timestamp;
+    marketExitedEvent.tx_hash = event.transaction.hash;
+    marketExitedEvent.logIndex = event.transactionLogIndex;
+    marketExitedEvent.save();
+
+    saveAccountCTokenEvent(cTokenStats.market, cTokenStats.account, marketExitedEvent.id);
   }
 }
 

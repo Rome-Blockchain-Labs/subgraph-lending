@@ -188,8 +188,9 @@ export function handleBorrow(event: Borrow): void {
 }
 
 export function getCTokenEventId(event: ethereum.Event): string {
-  return event.transaction.hash
-    .toHexString()
+  // This id ensures we can sort the events chronologically by using the id
+  return event.block.number
+    .toString()
     .concat("-")
     .concat(event.transactionLogIndex.toString());
 }

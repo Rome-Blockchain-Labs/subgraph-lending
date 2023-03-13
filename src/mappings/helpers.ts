@@ -77,9 +77,9 @@ export function saveAccountCTokenEvent(
 ): AccountCTokenEvent {
   let accountCTokenId = getAccountCTokenId(marketId, accountId);
   
-  let id = accountCTokenId
+  let id = eventId
     .concat("-")
-    .concat(eventId);
+    .concat(accountCTokenId);
   
   let accountCTokenEvent = AccountCTokenEvent.load(id);
 

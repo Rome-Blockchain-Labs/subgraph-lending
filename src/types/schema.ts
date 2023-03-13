@@ -408,6 +408,15 @@ export class Market extends Entity {
     this.set("accounts", Value.fromStringArray(value));
   }
 
+  get marketEvents(): Array<string> {
+    let value = this.get("marketEvents");
+    return value.toStringArray();
+  }
+
+  set marketEvents(value: Array<string>) {
+    this.set("marketEvents", Value.fromStringArray(value));
+  }
+
   get denomination(): string | null {
     let value = this.get("denomination");
     if (value === null || value.kind == ValueKind.NULL) {
@@ -423,33 +432,6 @@ export class Market extends Entity {
     } else {
       this.set("denomination", Value.fromString(value as string));
     }
-  }
-
-  get repaymentsThroughLiquidation(): Array<string> {
-    let value = this.get("repaymentsThroughLiquidation");
-    return value.toStringArray();
-  }
-
-  set repaymentsThroughLiquidation(value: Array<string>) {
-    this.set("repaymentsThroughLiquidation", Value.fromStringArray(value));
-  }
-
-  get cTokenTransfers(): Array<string> {
-    let value = this.get("cTokenTransfers");
-    return value.toStringArray();
-  }
-
-  set cTokenTransfers(value: Array<string>) {
-    this.set("cTokenTransfers", Value.fromStringArray(value));
-  }
-
-  get underlyingTransfers(): Array<string> {
-    let value = this.get("underlyingTransfers");
-    return value.toStringArray();
-  }
-
-  set underlyingTransfers(value: Array<string>) {
-    this.set("underlyingTransfers", Value.fromStringArray(value));
   }
 
   get hourlySnapshots(): Array<string> {
@@ -1232,6 +1214,15 @@ export class Account extends Entity {
   set hasBorrowed(value: boolean) {
     this.set("hasBorrowed", Value.fromBoolean(value));
   }
+
+  get accountEvents(): Array<string> {
+    let value = this.get("accountEvents");
+    return value.toStringArray();
+  }
+
+  set accountEvents(value: Array<string>) {
+    this.set("accountEvents", Value.fromStringArray(value));
+  }
 }
 
 export class AccountCToken extends Entity {
@@ -1289,15 +1280,6 @@ export class AccountCToken extends Entity {
 
   set account(value: string) {
     this.set("account", Value.fromString(value));
-  }
-
-  get transactions(): Array<string> {
-    let value = this.get("transactions");
-    return value.toStringArray();
-  }
-
-  set transactions(value: Array<string>) {
-    this.set("transactions", Value.fromStringArray(value));
   }
 
   get accrualBlockNumber(): BigInt {
@@ -1389,9 +1371,18 @@ export class AccountCToken extends Entity {
   set snapshots(value: Array<string>) {
     this.set("snapshots", Value.fromStringArray(value));
   }
+
+  get tokenEvents(): Array<string> {
+    let value = this.get("tokenEvents");
+    return value.toStringArray();
+  }
+
+  set tokenEvents(value: Array<string>) {
+    this.set("tokenEvents", Value.fromStringArray(value));
+  }
 }
 
-export class AccountCTokenTransaction extends Entity {
+export class AccountCTokenEvent extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
@@ -1399,23 +1390,17 @@ export class AccountCTokenTransaction extends Entity {
 
   save(): void {
     let id = this.get("id");
-    assert(
-      id !== null,
-      "Cannot save AccountCTokenTransaction entity without an ID"
-    );
+    assert(id !== null, "Cannot save AccountCTokenEvent entity without an ID");
     assert(
       id.kind == ValueKind.STRING,
-      "Cannot save AccountCTokenTransaction entity with non-string ID. " +
+      "Cannot save AccountCTokenEvent entity with non-string ID. " +
         'Considering using .toHex() to convert the "id" to a string.'
     );
-    store.set("AccountCTokenTransaction", id.toString(), this);
+    store.set("AccountCTokenEvent", id.toString(), this);
   }
 
-  static load(id: string): AccountCTokenTransaction | null {
-    return store.get(
-      "AccountCTokenTransaction",
-      id
-    ) as AccountCTokenTransaction | null;
+  static load(id: string): AccountCTokenEvent | null {
+    return store.get("AccountCTokenEvent", id) as AccountCTokenEvent | null;
   }
 
   get id(): string {
@@ -1436,40 +1421,31 @@ export class AccountCTokenTransaction extends Entity {
     this.set("account", Value.fromString(value));
   }
 
-  get tx_hash(): Bytes {
-    let value = this.get("tx_hash");
-    return value.toBytes();
+  get market(): string {
+    let value = this.get("market");
+    return value.toString();
   }
 
-  set tx_hash(value: Bytes) {
-    this.set("tx_hash", Value.fromBytes(value));
+  set market(value: string) {
+    this.set("market", Value.fromString(value));
   }
 
-  get timestamp(): BigInt {
-    let value = this.get("timestamp");
-    return value.toBigInt();
+  get event(): string {
+    let value = this.get("event");
+    return value.toString();
   }
 
-  set timestamp(value: BigInt) {
-    this.set("timestamp", Value.fromBigInt(value));
+  set event(value: string) {
+    this.set("event", Value.fromString(value));
   }
 
-  get block(): BigInt {
-    let value = this.get("block");
-    return value.toBigInt();
+  get accountCToken(): string {
+    let value = this.get("accountCToken");
+    return value.toString();
   }
 
-  set block(value: BigInt) {
-    this.set("block", Value.fromBigInt(value));
-  }
-
-  get logIndex(): BigInt {
-    let value = this.get("logIndex");
-    return value.toBigInt();
-  }
-
-  set logIndex(value: BigInt) {
-    this.set("logIndex", Value.fromBigInt(value));
+  set accountCToken(value: string) {
+    this.set("accountCToken", Value.fromString(value));
   }
 }
 
@@ -1512,6 +1488,67 @@ export class TransferEvent extends Entity {
     this.set("type", Value.fromString(value));
   }
 
+  get tx_hash(): Bytes {
+    let value = this.get("tx_hash");
+    return value.toBytes();
+  }
+
+  set tx_hash(value: Bytes) {
+    this.set("tx_hash", Value.fromBytes(value));
+  }
+
+  get logIndex(): BigInt {
+    let value = this.get("logIndex");
+    return value.toBigInt();
+  }
+
+  set logIndex(value: BigInt) {
+    this.set("logIndex", Value.fromBigInt(value));
+  }
+
+  get market(): string {
+    let value = this.get("market");
+    return value.toString();
+  }
+
+  set market(value: string) {
+    this.set("market", Value.fromString(value));
+  }
+
+  get to(): string | null {
+    let value = this.get("to");
+    if (value === null || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toString();
+    }
+  }
+
+  set to(value: string | null) {
+    if (value === null) {
+      this.unset("to");
+    } else {
+      this.set("to", Value.fromString(value as string));
+    }
+  }
+
+  get from(): string | null {
+    let value = this.get("from");
+    if (value === null || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toString();
+    }
+  }
+
+  set from(value: string | null) {
+    if (value === null) {
+      this.unset("from");
+    } else {
+      this.set("from", Value.fromString(value as string));
+    }
+  }
+
   get amount(): BigDecimal {
     let value = this.get("amount");
     return value.toBigDecimal();
@@ -1519,24 +1556,6 @@ export class TransferEvent extends Entity {
 
   set amount(value: BigDecimal) {
     this.set("amount", Value.fromBigDecimal(value));
-  }
-
-  get to(): Bytes {
-    let value = this.get("to");
-    return value.toBytes();
-  }
-
-  set to(value: Bytes) {
-    this.set("to", Value.fromBytes(value));
-  }
-
-  get from(): Bytes {
-    let value = this.get("from");
-    return value.toBytes();
-  }
-
-  set from(value: Bytes) {
-    this.set("from", Value.fromBytes(value));
   }
 
   get blockNumber(): BigInt {
@@ -1555,15 +1574,6 @@ export class TransferEvent extends Entity {
 
   set blockTime(value: BigInt) {
     this.set("blockTime", Value.fromBigInt(value));
-  }
-
-  get market(): string {
-    let value = this.get("market");
-    return value.toString();
-  }
-
-  set market(value: string) {
-    this.set("market", Value.fromString(value));
   }
 }
 
@@ -1606,6 +1616,42 @@ export class MintEvent extends Entity {
     this.set("type", Value.fromString(value));
   }
 
+  get tx_hash(): Bytes {
+    let value = this.get("tx_hash");
+    return value.toBytes();
+  }
+
+  set tx_hash(value: Bytes) {
+    this.set("tx_hash", Value.fromBytes(value));
+  }
+
+  get logIndex(): BigInt {
+    let value = this.get("logIndex");
+    return value.toBigInt();
+  }
+
+  set logIndex(value: BigInt) {
+    this.set("logIndex", Value.fromBigInt(value));
+  }
+
+  get market(): string {
+    let value = this.get("market");
+    return value.toString();
+  }
+
+  set market(value: string) {
+    this.set("market", Value.fromString(value));
+  }
+
+  get user(): string {
+    let value = this.get("user");
+    return value.toString();
+  }
+
+  set user(value: string) {
+    this.set("user", Value.fromString(value));
+  }
+
   get amount(): BigDecimal {
     let value = this.get("amount");
     return value.toBigDecimal();
@@ -1615,22 +1661,21 @@ export class MintEvent extends Entity {
     this.set("amount", Value.fromBigDecimal(value));
   }
 
-  get to(): Bytes {
-    let value = this.get("to");
-    return value.toBytes();
+  get underlyingAmount(): BigDecimal | null {
+    let value = this.get("underlyingAmount");
+    if (value === null || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBigDecimal();
+    }
   }
 
-  set to(value: Bytes) {
-    this.set("to", Value.fromBytes(value));
-  }
-
-  get from(): Bytes {
-    let value = this.get("from");
-    return value.toBytes();
-  }
-
-  set from(value: Bytes) {
-    this.set("from", Value.fromBytes(value));
+  set underlyingAmount(value: BigDecimal | null) {
+    if (value === null) {
+      this.unset("underlyingAmount");
+    } else {
+      this.set("underlyingAmount", Value.fromBigDecimal(value as BigDecimal));
+    }
   }
 
   get blockNumber(): BigInt {
@@ -1649,32 +1694,6 @@ export class MintEvent extends Entity {
 
   set blockTime(value: BigInt) {
     this.set("blockTime", Value.fromBigInt(value));
-  }
-
-  get market(): string {
-    let value = this.get("market");
-    return value.toString();
-  }
-
-  set market(value: string) {
-    this.set("market", Value.fromString(value));
-  }
-
-  get underlyingAmount(): BigDecimal | null {
-    let value = this.get("underlyingAmount");
-    if (value === null || value.kind == ValueKind.NULL) {
-      return null;
-    } else {
-      return value.toBigDecimal();
-    }
-  }
-
-  set underlyingAmount(value: BigDecimal | null) {
-    if (value === null) {
-      this.unset("underlyingAmount");
-    } else {
-      this.set("underlyingAmount", Value.fromBigDecimal(value as BigDecimal));
-    }
   }
 }
 
@@ -1717,6 +1736,42 @@ export class RedeemEvent extends Entity {
     this.set("type", Value.fromString(value));
   }
 
+  get tx_hash(): Bytes {
+    let value = this.get("tx_hash");
+    return value.toBytes();
+  }
+
+  set tx_hash(value: Bytes) {
+    this.set("tx_hash", Value.fromBytes(value));
+  }
+
+  get logIndex(): BigInt {
+    let value = this.get("logIndex");
+    return value.toBigInt();
+  }
+
+  set logIndex(value: BigInt) {
+    this.set("logIndex", Value.fromBigInt(value));
+  }
+
+  get market(): string {
+    let value = this.get("market");
+    return value.toString();
+  }
+
+  set market(value: string) {
+    this.set("market", Value.fromString(value));
+  }
+
+  get user(): string {
+    let value = this.get("user");
+    return value.toString();
+  }
+
+  set user(value: string) {
+    this.set("user", Value.fromString(value));
+  }
+
   get amount(): BigDecimal {
     let value = this.get("amount");
     return value.toBigDecimal();
@@ -1726,22 +1781,21 @@ export class RedeemEvent extends Entity {
     this.set("amount", Value.fromBigDecimal(value));
   }
 
-  get to(): Bytes {
-    let value = this.get("to");
-    return value.toBytes();
+  get underlyingAmount(): BigDecimal | null {
+    let value = this.get("underlyingAmount");
+    if (value === null || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBigDecimal();
+    }
   }
 
-  set to(value: Bytes) {
-    this.set("to", Value.fromBytes(value));
-  }
-
-  get from(): Bytes {
-    let value = this.get("from");
-    return value.toBytes();
-  }
-
-  set from(value: Bytes) {
-    this.set("from", Value.fromBytes(value));
+  set underlyingAmount(value: BigDecimal | null) {
+    if (value === null) {
+      this.unset("underlyingAmount");
+    } else {
+      this.set("underlyingAmount", Value.fromBigDecimal(value as BigDecimal));
+    }
   }
 
   get blockNumber(): BigInt {
@@ -1760,32 +1814,6 @@ export class RedeemEvent extends Entity {
 
   set blockTime(value: BigInt) {
     this.set("blockTime", Value.fromBigInt(value));
-  }
-
-  get market(): string {
-    let value = this.get("market");
-    return value.toString();
-  }
-
-  set market(value: string) {
-    this.set("market", Value.fromString(value));
-  }
-
-  get underlyingAmount(): BigDecimal | null {
-    let value = this.get("underlyingAmount");
-    if (value === null || value.kind == ValueKind.NULL) {
-      return null;
-    } else {
-      return value.toBigDecimal();
-    }
-  }
-
-  set underlyingAmount(value: BigDecimal | null) {
-    if (value === null) {
-      this.unset("underlyingAmount");
-    } else {
-      this.set("underlyingAmount", Value.fromBigDecimal(value as BigDecimal));
-    }
   }
 }
 
@@ -1828,58 +1856,31 @@ export class LiquidationEvent extends Entity {
     this.set("type", Value.fromString(value));
   }
 
-  get amount(): BigDecimal {
-    let value = this.get("amount");
-    return value.toBigDecimal();
-  }
-
-  set amount(value: BigDecimal) {
-    this.set("amount", Value.fromBigDecimal(value));
-  }
-
-  get to(): Bytes {
-    let value = this.get("to");
+  get tx_hash(): Bytes {
+    let value = this.get("tx_hash");
     return value.toBytes();
   }
 
-  set to(value: Bytes) {
-    this.set("to", Value.fromBytes(value));
+  set tx_hash(value: Bytes) {
+    this.set("tx_hash", Value.fromBytes(value));
   }
 
-  get from(): Bytes {
-    let value = this.get("from");
-    return value.toBytes();
-  }
-
-  set from(value: Bytes) {
-    this.set("from", Value.fromBytes(value));
-  }
-
-  get blockNumber(): BigInt {
-    let value = this.get("blockNumber");
+  get logIndex(): BigInt {
+    let value = this.get("logIndex");
     return value.toBigInt();
   }
 
-  set blockNumber(value: BigInt) {
-    this.set("blockNumber", Value.fromBigInt(value));
+  set logIndex(value: BigInt) {
+    this.set("logIndex", Value.fromBigInt(value));
   }
 
-  get blockTime(): BigInt {
-    let value = this.get("blockTime");
-    return value.toBigInt();
-  }
-
-  set blockTime(value: BigInt) {
-    this.set("blockTime", Value.fromBigInt(value));
-  }
-
-  get market(): string {
-    let value = this.get("market");
+  get seizedMarket(): string {
+    let value = this.get("seizedMarket");
     return value.toString();
   }
 
-  set market(value: string) {
-    this.set("market", Value.fromString(value));
+  set seizedMarket(value: string) {
+    this.set("seizedMarket", Value.fromString(value));
   }
 
   get repayMarket(): string {
@@ -1889,6 +1890,33 @@ export class LiquidationEvent extends Entity {
 
   set repayMarket(value: string) {
     this.set("repayMarket", Value.fromString(value));
+  }
+
+  get liquidator(): string {
+    let value = this.get("liquidator");
+    return value.toString();
+  }
+
+  set liquidator(value: string) {
+    this.set("liquidator", Value.fromString(value));
+  }
+
+  get borrower(): string {
+    let value = this.get("borrower");
+    return value.toString();
+  }
+
+  set borrower(value: string) {
+    this.set("borrower", Value.fromString(value));
+  }
+
+  get seizedTokens(): BigDecimal {
+    let value = this.get("seizedTokens");
+    return value.toBigDecimal();
+  }
+
+  set seizedTokens(value: BigDecimal) {
+    this.set("seizedTokens", Value.fromBigDecimal(value));
   }
 
   get underlyingSymbol(): string {
@@ -1907,6 +1935,24 @@ export class LiquidationEvent extends Entity {
 
   set underlyingRepayAmount(value: BigDecimal) {
     this.set("underlyingRepayAmount", Value.fromBigDecimal(value));
+  }
+
+  get blockNumber(): BigInt {
+    let value = this.get("blockNumber");
+    return value.toBigInt();
+  }
+
+  set blockNumber(value: BigInt) {
+    this.set("blockNumber", Value.fromBigInt(value));
+  }
+
+  get blockTime(): BigInt {
+    let value = this.get("blockTime");
+    return value.toBigInt();
+  }
+
+  set blockTime(value: BigInt) {
+    this.set("blockTime", Value.fromBigInt(value));
   }
 }
 
@@ -1940,6 +1986,33 @@ export class BorrowEvent extends Entity {
     this.set("id", Value.fromString(value));
   }
 
+  get type(): string {
+    let value = this.get("type");
+    return value.toString();
+  }
+
+  set type(value: string) {
+    this.set("type", Value.fromString(value));
+  }
+
+  get tx_hash(): Bytes {
+    let value = this.get("tx_hash");
+    return value.toBytes();
+  }
+
+  set tx_hash(value: Bytes) {
+    this.set("tx_hash", Value.fromBytes(value));
+  }
+
+  get logIndex(): BigInt {
+    let value = this.get("logIndex");
+    return value.toBigInt();
+  }
+
+  set logIndex(value: BigInt) {
+    this.set("logIndex", Value.fromBigInt(value));
+  }
+
   get market(): string {
     let value = this.get("market");
     return value.toString();
@@ -1949,13 +2022,13 @@ export class BorrowEvent extends Entity {
     this.set("market", Value.fromString(value));
   }
 
-  get type(): string {
-    let value = this.get("type");
+  get borrower(): string {
+    let value = this.get("borrower");
     return value.toString();
   }
 
-  set type(value: string) {
-    this.set("type", Value.fromString(value));
+  set borrower(value: string) {
+    this.set("borrower", Value.fromString(value));
   }
 
   get amount(): BigDecimal {
@@ -1976,13 +2049,13 @@ export class BorrowEvent extends Entity {
     this.set("accountBorrows", Value.fromBigDecimal(value));
   }
 
-  get borrower(): Bytes {
-    let value = this.get("borrower");
-    return value.toBytes();
+  get underlyingSymbol(): string {
+    let value = this.get("underlyingSymbol");
+    return value.toString();
   }
 
-  set borrower(value: Bytes) {
-    this.set("borrower", Value.fromBytes(value));
+  set underlyingSymbol(value: string) {
+    this.set("underlyingSymbol", Value.fromString(value));
   }
 
   get blockNumber(): BigInt {
@@ -2001,15 +2074,6 @@ export class BorrowEvent extends Entity {
 
   set blockTime(value: BigInt) {
     this.set("blockTime", Value.fromBigInt(value));
-  }
-
-  get underlyingSymbol(): string {
-    let value = this.get("underlyingSymbol");
-    return value.toString();
-  }
-
-  set underlyingSymbol(value: string) {
-    this.set("underlyingSymbol", Value.fromString(value));
   }
 }
 
@@ -2043,6 +2107,33 @@ export class RepayEvent extends Entity {
     this.set("id", Value.fromString(value));
   }
 
+  get type(): string {
+    let value = this.get("type");
+    return value.toString();
+  }
+
+  set type(value: string) {
+    this.set("type", Value.fromString(value));
+  }
+
+  get tx_hash(): Bytes {
+    let value = this.get("tx_hash");
+    return value.toBytes();
+  }
+
+  set tx_hash(value: Bytes) {
+    this.set("tx_hash", Value.fromBytes(value));
+  }
+
+  get logIndex(): BigInt {
+    let value = this.get("logIndex");
+    return value.toBigInt();
+  }
+
+  set logIndex(value: BigInt) {
+    this.set("logIndex", Value.fromBigInt(value));
+  }
+
   get market(): string {
     let value = this.get("market");
     return value.toString();
@@ -2052,13 +2143,22 @@ export class RepayEvent extends Entity {
     this.set("market", Value.fromString(value));
   }
 
-  get type(): string {
-    let value = this.get("type");
+  get borrower(): string {
+    let value = this.get("borrower");
     return value.toString();
   }
 
-  set type(value: string) {
-    this.set("type", Value.fromString(value));
+  set borrower(value: string) {
+    this.set("borrower", Value.fromString(value));
+  }
+
+  get payer(): string {
+    let value = this.get("payer");
+    return value.toString();
+  }
+
+  set payer(value: string) {
+    this.set("payer", Value.fromString(value));
   }
 
   get amount(): BigDecimal {
@@ -2079,13 +2179,13 @@ export class RepayEvent extends Entity {
     this.set("accountBorrows", Value.fromBigDecimal(value));
   }
 
-  get borrower(): Bytes {
-    let value = this.get("borrower");
-    return value.toBytes();
+  get underlyingSymbol(): string {
+    let value = this.get("underlyingSymbol");
+    return value.toString();
   }
 
-  set borrower(value: Bytes) {
-    this.set("borrower", Value.fromBytes(value));
+  set underlyingSymbol(value: string) {
+    this.set("underlyingSymbol", Value.fromString(value));
   }
 
   get blockNumber(): BigInt {
@@ -2105,23 +2205,193 @@ export class RepayEvent extends Entity {
   set blockTime(value: BigInt) {
     this.set("blockTime", Value.fromBigInt(value));
   }
+}
 
-  get underlyingSymbol(): string {
-    let value = this.get("underlyingSymbol");
+export class MarketEnteredEvent extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id !== null, "Cannot save MarketEnteredEvent entity without an ID");
+    assert(
+      id.kind == ValueKind.STRING,
+      "Cannot save MarketEnteredEvent entity with non-string ID. " +
+        'Considering using .toHex() to convert the "id" to a string.'
+    );
+    store.set("MarketEnteredEvent", id.toString(), this);
+  }
+
+  static load(id: string): MarketEnteredEvent | null {
+    return store.get("MarketEnteredEvent", id) as MarketEnteredEvent | null;
+  }
+
+  get id(): string {
+    let value = this.get("id");
     return value.toString();
   }
 
-  set underlyingSymbol(value: string) {
-    this.set("underlyingSymbol", Value.fromString(value));
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
   }
 
-  get payer(): Bytes {
-    let value = this.get("payer");
+  get type(): string {
+    let value = this.get("type");
+    return value.toString();
+  }
+
+  set type(value: string) {
+    this.set("type", Value.fromString(value));
+  }
+
+  get tx_hash(): Bytes {
+    let value = this.get("tx_hash");
     return value.toBytes();
   }
 
-  set payer(value: Bytes) {
-    this.set("payer", Value.fromBytes(value));
+  set tx_hash(value: Bytes) {
+    this.set("tx_hash", Value.fromBytes(value));
+  }
+
+  get logIndex(): BigInt {
+    let value = this.get("logIndex");
+    return value.toBigInt();
+  }
+
+  set logIndex(value: BigInt) {
+    this.set("logIndex", Value.fromBigInt(value));
+  }
+
+  get market(): string {
+    let value = this.get("market");
+    return value.toString();
+  }
+
+  set market(value: string) {
+    this.set("market", Value.fromString(value));
+  }
+
+  get account(): string {
+    let value = this.get("account");
+    return value.toString();
+  }
+
+  set account(value: string) {
+    this.set("account", Value.fromString(value));
+  }
+
+  get blockNumber(): BigInt {
+    let value = this.get("blockNumber");
+    return value.toBigInt();
+  }
+
+  set blockNumber(value: BigInt) {
+    this.set("blockNumber", Value.fromBigInt(value));
+  }
+
+  get blockTime(): BigInt {
+    let value = this.get("blockTime");
+    return value.toBigInt();
+  }
+
+  set blockTime(value: BigInt) {
+    this.set("blockTime", Value.fromBigInt(value));
+  }
+}
+
+export class MarketExitedEvent extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id !== null, "Cannot save MarketExitedEvent entity without an ID");
+    assert(
+      id.kind == ValueKind.STRING,
+      "Cannot save MarketExitedEvent entity with non-string ID. " +
+        'Considering using .toHex() to convert the "id" to a string.'
+    );
+    store.set("MarketExitedEvent", id.toString(), this);
+  }
+
+  static load(id: string): MarketExitedEvent | null {
+    return store.get("MarketExitedEvent", id) as MarketExitedEvent | null;
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get type(): string {
+    let value = this.get("type");
+    return value.toString();
+  }
+
+  set type(value: string) {
+    this.set("type", Value.fromString(value));
+  }
+
+  get tx_hash(): Bytes {
+    let value = this.get("tx_hash");
+    return value.toBytes();
+  }
+
+  set tx_hash(value: Bytes) {
+    this.set("tx_hash", Value.fromBytes(value));
+  }
+
+  get logIndex(): BigInt {
+    let value = this.get("logIndex");
+    return value.toBigInt();
+  }
+
+  set logIndex(value: BigInt) {
+    this.set("logIndex", Value.fromBigInt(value));
+  }
+
+  get market(): string {
+    let value = this.get("market");
+    return value.toString();
+  }
+
+  set market(value: string) {
+    this.set("market", Value.fromString(value));
+  }
+
+  get account(): string {
+    let value = this.get("account");
+    return value.toString();
+  }
+
+  set account(value: string) {
+    this.set("account", Value.fromString(value));
+  }
+
+  get blockNumber(): BigInt {
+    let value = this.get("blockNumber");
+    return value.toBigInt();
+  }
+
+  set blockNumber(value: BigInt) {
+    this.set("blockNumber", Value.fromBigInt(value));
+  }
+
+  get blockTime(): BigInt {
+    let value = this.get("blockTime");
+    return value.toBigInt();
+  }
+
+  set blockTime(value: BigInt) {
+    this.set("blockTime", Value.fromBigInt(value));
   }
 }
 

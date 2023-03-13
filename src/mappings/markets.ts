@@ -1,7 +1,7 @@
 /* eslint-disable prefer-const */ // to satisfy AS compiler
 
 // For each division by 10, add one to exponent to truncate one significant figure
-import { Address, BigDecimal, BigInt, log } from "@graphprotocol/graph-ts";
+import { Address, BigDecimal, BigInt, Bytes, log } from "@graphprotocol/graph-ts";
 import { Market, Comptroller, Token } from "../types/schema";
 // PriceOracle is valid from Comptroller deployment until block 8498421
 import { PriceOracle } from "../types/templates/CToken/PriceOracle";
@@ -10,8 +10,10 @@ import { PriceOracle2 } from "../types/templates/CToken/PriceOracle2";
 import { ERC20 } from "../types/templates/CToken/ERC20";
 import { CToken } from "../types/templates/CToken/CToken";
 
-import { exponentToBigDecimal, mantissaFactor, mantissaFactorBD, cTokenDecimalsBD, zeroBD } from "./helpers";
+import { exponentToBigDecimal, mantissaFactor, mantissaFactorBD, cTokenDecimalsBD, zeroBD, zeroBI } from "./helpers";
 import { MANTISSA_FACTOR, QIAVAX_TOKEN_ADDRESS, WAVAX_TOKEN_ADDRESS } from "./constants";
+import { getOrCreateComptroller } from './comptroller';
+import { saveMarketSnapshots } from './snapshots';
 
 let cUSDCAddress = "0x39aa39c021dfbae8fac545936693ac917d5e7563";
 let cETHAddress = "0x4ddc2d193948926d02f9b1fe9e1daa0718270ed5";
@@ -26,7 +28,7 @@ function getTokenPrice(
   // @ts-ignore
   underlyingDecimals: i32
 ): BigDecimal {
-  let comptroller = Comptroller.load("1");
+  let comptroller = getOrCreateComptroller();
   let oracleAddress = comptroller.priceOracle as Address;
   let underlyingPrice: BigDecimal;
   let priceOracle1Address = Address.fromString("02557a5e05defeffd4cae6d83ea3d173b272c904");
@@ -75,7 +77,7 @@ function getTokenPrice(
 // Returns the price of USDC in eth. i.e. 0.005 would mean ETH is $200
 // @ts-ignore
 function getUSDCpriceETH(blockNumber: i32): BigDecimal {
-  let comptroller = Comptroller.load("1");
+  let comptroller = getOrCreateComptroller();
   let oracleAddress = comptroller.priceOracle as Address;
   let priceOracle1Address = Address.fromString("02557a5e05defeffd4cae6d83ea3d173b272c904");
   let USDCAddress = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48 ";
@@ -133,7 +135,7 @@ export function createMarket(marketAddress: string): Market {
     market.save();
     return market;
   }
-  //edge case @yhayun, no market - returning emopty one:
+  //edge case @yhayun, no market - returning empty one:
   log.error("*** YHAYUN *** : No market provided", [marketAddress]);
   let tempToken = getOrCreateToken(marketAddress);
   let market = getOrCreateMarket(marketAddress, tempToken);
@@ -158,6 +160,7 @@ function getOrCreateMarket(id: string, token: Token): Market {
   let market = Market.load(id);
   if (market == null) {
     market = new Market(id);
+    market.totalRewardsDistributed = [];
     market.totalFeesGenerated = zeroBD;
     market.totalProtocolFeesGenerated = zeroBD;
     market.totalBorrows = zeroBD;
@@ -167,19 +170,21 @@ function getOrCreateMarket(id: string, token: Token): Market {
     market.reserveFactor = zeroBD;
     market.denomination = token.id;
     market.underlyingAddress = token.address;
-    market.underlyingName = token.name;
+    market.underlyingName = token.name!;
     market.underlyingDecimals = token.decimals;
     market.underlyingPrice = zeroBD;
-    market.underlyingSymbol = token.symbol;
+    market.underlyingSymbol = token.symbol!;
     market.underlyingPriceUSD = zeroBD;
     market.borrowRate = zeroBD;
     market.collateralFactor = zeroBD;
     market.cash = zeroBD;
-    market.accrualBlockNumber = 0;
-    market.blockTimestamp = 0;
+    market.accrualBlockNumber = zeroBI;
+    market.blockTimestamp = zeroBI;
     market.borrowIndex = zeroBD;
     market.name = "";
     market.symbol = "";
+    market.suppliersCount = 0;
+    market.borrowersCount = 0;
   }
   return market as Market;
 }
@@ -253,8 +258,8 @@ export function createMarketDEPRECATED(marketAddress: string): Market {
   market.totalBorrows = zeroBD;
   market.totalSupply = zeroBD;
 
-  market.accrualBlockNumber = 0;
-  market.blockTimestamp = 0;
+  market.accrualBlockNumber = zeroBI;
+  market.blockTimestamp = zeroBI;
   market.borrowIndex = zeroBD;
   market.reserveFactor = (reserveFactor.reverted ? BigInt.fromI32(0) : reserveFactor.value).toBigDecimal();
 
@@ -264,7 +269,7 @@ export function createMarketDEPRECATED(marketAddress: string): Market {
 // Only to be used after block 10678764, since it's aimed to fix the change to USD based price oracle.
 // @ts-ignore
 function getETHinUSD(blockNumber: i32): BigDecimal {
-  let comptroller = Comptroller.load("1");
+  let comptroller = getOrCreateComptroller();
   let oracleAddress = comptroller.priceOracle as Address;
   let oracle = PriceOracle2.bind(oracleAddress);
   let tryPrice = oracle.try_getUnderlyingPrice(Address.fromString(cETHAddress));
@@ -275,7 +280,7 @@ function getETHinUSD(blockNumber: i32): BigDecimal {
 }
 
 // @ts-ignore
-export function updateMarket(marketAddress: Address, blockNumber: i32, blockTimestamp: i32): Market {
+export function updateMarket(marketAddress: Address, blockNumber: BigInt, blockTimestamp: BigInt, blockHash: Bytes): Market {
   let marketID = marketAddress.toHexString();
   let market = Market.load(marketID);
   if (market == null) {
@@ -330,7 +335,7 @@ export function updateMarket(marketAddress: Address, blockNumber: i32, blockTime
     // }
 
     //TODO @yhayun
-    // market.accrualBlockNumber = contract.accrualBlockNumber().toI32()
+    // market.accrualBlockNumber = contract.accrualBlockNumber()
     market.blockTimestamp = blockTimestamp;
     market.totalSupply = contract
       .totalSupply()
@@ -399,6 +404,8 @@ export function updateMarket(marketAddress: Address, blockNumber: i32, blockTime
     //     .truncate(mantissaFactor)
     // }
     market.save();
+
+    saveMarketSnapshots(market!, blockTimestamp, blockNumber, blockHash);
   }
   return market as Market;
 }

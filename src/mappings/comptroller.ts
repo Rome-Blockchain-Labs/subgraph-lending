@@ -9,7 +9,7 @@ import {
   NewPriceOracle,
   MarketListed,
 } from "../types/Comptroller/Comptroller";
-import { Address } from "@graphprotocol/graph-ts";
+import { Address, ethereum } from "@graphprotocol/graph-ts";
 import { CToken } from "../types/templates";
 import { Market, Comptroller, Account } from "../types/schema";
 import { mantissaFactorBD, updateCommonCTokenStats, createAccount } from "./helpers";
@@ -107,6 +107,10 @@ export function handleNewPriceOracle(event: NewPriceOracle): void {
   }
   comptroller.priceOracle = event.params.newPriceOracle;
   comptroller.save();
+}
+
+export function handlehandleNewBlock(block: ethereum.Block): void {
+  // Define the granularity of blocks to skip to create a periodic snapshot
 }
 
 export function getOrCreateComptroller(): Comptroller {

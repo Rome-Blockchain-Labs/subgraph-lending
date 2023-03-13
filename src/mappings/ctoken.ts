@@ -29,6 +29,7 @@ import {
   cTokenDecimalsBD,
   cTokenDecimals,
 } from "./helpers";
+import { updateAccountMarketSnapshot } from './snapshots';
 
 /* Account supplies assets into market and receives cTokens in exchange
  *
@@ -63,12 +64,14 @@ export function handleMint(event: Mint): void {
     .truncate(market.underlyingDecimals);
 
   let mint = new MintEvent(mintID);
+  mint.type = 'Mint';
+  mint.market = market.id;
   mint.amount = cTokenAmount;
   mint.to = event.params.minter;
   mint.from = event.address;
-  mint.blockNumber = event.block.number.toI32();
-  mint.blockTime = event.block.timestamp.toI32();
-  mint.cTokenSymbol = market.symbol;
+  mint.blockNumber = event.block.number;
+  mint.blockTime = event.block.timestamp;
+  mint.market = market.id;
   mint.underlyingAmount = underlyingAmount;
   mint.save();
 }
@@ -105,12 +108,14 @@ export function handleRedeem(event: Redeem): void {
     .truncate(market.underlyingDecimals);
 
   let redeem = new RedeemEvent(redeemID);
+  redeem.type = 'Redeem';
+  redeem.market = market.id;
   redeem.amount = cTokenAmount;
   redeem.to = event.address;
   redeem.from = event.params.redeemer;
-  redeem.blockNumber = event.block.number.toI32();
-  redeem.blockTime = event.block.timestamp.toI32();
-  redeem.cTokenSymbol = market.symbol;
+  redeem.blockNumber = event.block.number;
+  redeem.blockTime = event.block.timestamp;
+  redeem.market = market.id;
   redeem.underlyingAmount = underlyingAmount;
   redeem.save();
 }
@@ -151,11 +156,12 @@ export function handleBorrow(event: Borrow): void {
 
   let borrowAmountBD = event.params.borrowAmount.toBigDecimal().div(exponentToBigDecimal(market.underlyingDecimals));
 
-  cTokenStats.storedBorrowBalance = event.params.accountBorrows
+  let accountBorrows = event.params.accountBorrows
     .toBigDecimal()
     .div(exponentToBigDecimal(market.underlyingDecimals))
     .truncate(market.underlyingDecimals);
 
+  cTokenStats.storedBorrowBalance = accountBorrows;
   cTokenStats.accountBorrowIndex = market.borrowIndex;
   cTokenStats.totalUnderlyingBorrowed = cTokenStats.totalUnderlyingBorrowed.plus(borrowAmountBD);
   cTokenStats.save();
@@ -165,22 +171,17 @@ export function handleBorrow(event: Borrow): void {
     .concat("-")
     .concat(event.transactionLogIndex.toString());
 
-  let borrowAmount = event.params.borrowAmount
-    .toBigDecimal()
-    .div(exponentToBigDecimal(market.underlyingDecimals))
-    .truncate(market.underlyingDecimals);
-
-  let accountBorrows = event.params.accountBorrows
-    .toBigDecimal()
-    .div(exponentToBigDecimal(market.underlyingDecimals))
+  let borrowAmount = borrowAmountBD
     .truncate(market.underlyingDecimals);
 
   let borrow = new BorrowEvent(borrowID);
+  borrow.type = 'Borrow';
+  borrow.market = market.id;
   borrow.amount = borrowAmount;
   borrow.accountBorrows = accountBorrows;
   borrow.borrower = event.params.borrower;
-  borrow.blockNumber = event.block.number.toI32();
-  borrow.blockTime = event.block.timestamp.toI32();
+  borrow.blockNumber = event.block.number;
+  borrow.blockTime = event.block.timestamp;
   borrow.underlyingSymbol = market.underlyingSymbol;
   borrow.save();
 }
@@ -224,11 +225,12 @@ export function handleRepayBorrow(event: RepayBorrow): void {
 
   let repayAmountBD = event.params.repayAmount.toBigDecimal().div(exponentToBigDecimal(market.underlyingDecimals));
 
-  cTokenStats.storedBorrowBalance = event.params.accountBorrows
+  let accountBorrows = event.params.accountBorrows
     .toBigDecimal()
     .div(exponentToBigDecimal(market.underlyingDecimals))
     .truncate(market.underlyingDecimals);
 
+  cTokenStats.storedBorrowBalance = accountBorrows;
   cTokenStats.accountBorrowIndex = market.borrowIndex;
   cTokenStats.totalUnderlyingRepaid = cTokenStats.totalUnderlyingRepaid.plus(repayAmountBD);
   cTokenStats.save();
@@ -238,22 +240,16 @@ export function handleRepayBorrow(event: RepayBorrow): void {
     .concat("-")
     .concat(event.transactionLogIndex.toString());
 
-  let repayAmount = event.params.repayAmount
-    .toBigDecimal()
-    .div(exponentToBigDecimal(market.underlyingDecimals))
-    .truncate(market.underlyingDecimals);
-
-  let accountBorrows = event.params.accountBorrows
-    .toBigDecimal()
-    .div(exponentToBigDecimal(market.underlyingDecimals))
-    .truncate(market.underlyingDecimals);
+  let repayAmount = repayAmountBD.truncate(market.underlyingDecimals);
 
   let repay = new RepayEvent(repayID);
+  repay.type = 'Repay';
+  repay.market = market.id;
   repay.amount = repayAmount;
   repay.accountBorrows = accountBorrows;
   repay.borrower = event.params.borrower;
-  repay.blockNumber = event.block.number.toI32();
-  repay.blockTime = event.block.timestamp.toI32();
+  repay.blockNumber = event.block.number;
+  repay.blockTime = event.block.timestamp;
   repay.underlyingSymbol = market.underlyingSymbol;
   repay.payer = event.params.payer;
   repay.save();
@@ -301,6 +297,10 @@ export function handleLiquidateBorrow(event: LiquidateBorrow): void {
     marketRepayToken = createMarket(event.address.toHexString());
   }
   let marketCTokenLiquidated = Market.load(event.params.qiTokenCollateral.toHexString());
+  if (marketCTokenLiquidated == null) {
+    marketCTokenLiquidated = createMarket(event.params.qiTokenCollateral.toHexString());
+  }
+
   let mintID = event.transaction.hash
     .toHexString()
     .concat("-")
@@ -316,14 +316,18 @@ export function handleLiquidateBorrow(event: LiquidateBorrow): void {
     .truncate(marketRepayToken.underlyingDecimals);
 
   let liquidation = new LiquidationEvent(mintID);
+  liquidation.type = 'Liquidation';
+  liquidation.market = marketCTokenLiquidated.id;
+  liquidation.repayMarket = marketRepayToken.id;
   liquidation.amount = cTokenAmount;
   liquidation.to = event.params.liquidator;
   liquidation.from = event.params.borrower;
-  liquidation.blockNumber = event.block.number.toI32();
-  liquidation.blockTime = event.block.timestamp.toI32();
+  liquidation.blockNumber = event.block.number;
+  liquidation.blockTime = event.block.timestamp;
   liquidation.underlyingSymbol = marketRepayToken.underlyingSymbol;
   liquidation.underlyingRepayAmount = underlyingRepayAmount;
-  liquidation.cTokenSymbol = marketCTokenLiquidated.symbol;
+  liquidation.market = marketCTokenLiquidated!.id;
+  liquidation.repayMarket = marketRepayToken.id;
   liquidation.save();
 }
 
@@ -347,8 +351,11 @@ export function handleTransfer(event: Transfer): void {
   // with normal transfers, since mint, redeem, and seize transfers will already run updateMarket()
   let marketID = event.address.toHexString();
   let market = Market.load(marketID);
-  if (market.accrualBlockNumber != event.block.number.toI32()) {
-    market = updateMarket(event.address, event.block.number.toI32(), event.block.timestamp.toI32());
+  if (market == null) {
+    market = createMarket(marketID);
+  }
+  if (market.accrualBlockNumber != event.block.number) {
+    market = updateMarket(event.address, event.block.number, event.block.timestamp, event.block.hash);
   }
 
   let amountUnderlying = market.exchangeRate.times(event.params.amount.toBigDecimal().div(cTokenDecimalsBD));
@@ -384,6 +391,8 @@ export function handleTransfer(event: Transfer): void {
 
     cTokenStatsFrom.totalUnderlyingRedeemed = cTokenStatsFrom.totalUnderlyingRedeemed.plus(amountUnderlyingTruncated);
     cTokenStatsFrom.save();
+
+    updateAccountMarketSnapshot(cTokenStatsFrom, market!, event.block.number, event.block.timestamp);
   }
 
   // Checking if the tx is TO the cToken contract (i.e. this will not run when redeeming)
@@ -418,6 +427,8 @@ export function handleTransfer(event: Transfer): void {
 
     cTokenStatsTo.totalUnderlyingSupplied = cTokenStatsTo.totalUnderlyingSupplied.plus(amountUnderlyingTruncated);
     cTokenStatsTo.save();
+
+    updateAccountMarketSnapshot(cTokenStatsTo, market!, event.block.number, event.block.timestamp);
   }
 
   let transferID = event.transaction.hash
@@ -426,22 +437,27 @@ export function handleTransfer(event: Transfer): void {
     .concat(event.transactionLogIndex.toString());
 
   let transfer = new TransferEvent(transferID);
+  transfer.type = 'Transfer';
+  transfer.market = market.id;
   transfer.amount = event.params.amount.toBigDecimal().div(cTokenDecimalsBD);
   transfer.to = event.params.to;
   transfer.from = event.params.from;
-  transfer.blockNumber = event.block.number.toI32();
-  transfer.blockTime = event.block.timestamp.toI32();
-  transfer.cTokenSymbol = market.symbol;
+  transfer.blockNumber = event.block.number;
+  transfer.blockTime = event.block.timestamp;
+  transfer.market = market.id;
   transfer.save();
 }
 
 export function handleAccrueInterest(event: AccrueInterest): void {
-  updateMarket(event.address, event.block.number.toI32(), event.block.timestamp.toI32());
+  updateMarket(event.address, event.block.number, event.block.timestamp, event.block.hash);
 }
 
 export function handleNewReserveFactor(event: NewReserveFactor): void {
   let marketID = event.address.toHex();
   let market = Market.load(marketID);
+  if (market == null) {
+    market = createMarket(marketID);
+  }
   market.reserveFactor = event.params.newReserveFactorMantissa.toBigDecimal();
   market.save();
 }

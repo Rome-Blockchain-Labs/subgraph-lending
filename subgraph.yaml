@@ -52,6 +52,8 @@ dataSources:
           handler: handleMarketExited
         - event: NewCloseFactor(uint256,uint256)
           handler: handleNewCloseFactor
+        - event: NewPriceOracle(address,address)
+          handler: handleNewPriceOracle
         - event: NewCollateralFactor(address,uint256,uint256)
           handler: handleNewCollateralFactor
         - event: NewLiquidationIncentive(uint256,uint256)

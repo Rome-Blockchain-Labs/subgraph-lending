@@ -398,7 +398,7 @@ enum CTokenEventType {
   Mint
   Redeem
   Borrow
-  Repay
+  RepayBorrow
   Liquidation
   MarketEntered
   MarketExited

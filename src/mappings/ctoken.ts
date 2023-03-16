@@ -246,7 +246,7 @@ export function handleRepayBorrow(event: RepayBorrow): void {
   let repayAmount = repayAmountBD.truncate(market.underlyingDecimals);
 
   let repay = new RepayEvent(repayID);
-  repay.type = 'Repay';
+  repay.type = 'RepayBorrow';
   repay.market = market.id;
   repay.blockNumber = event.block.number;
   repay.blockTime = event.block.timestamp;

@@ -265,8 +265,8 @@ export class Market extends Entity {
     this.set("underlyingPrice", Value.fromBigDecimal(value));
   }
 
-  get accrualBlockNumber(): BigInt | null {
-    let value = this.get("accrualBlockNumber");
+  get accrualBlockTimestamp(): BigInt | null {
+    let value = this.get("accrualBlockTimestamp");
     if (value === null || value.kind == ValueKind.NULL) {
       return null;
     } else {
@@ -274,11 +274,11 @@ export class Market extends Entity {
     }
   }
 
-  set accrualBlockNumber(value: BigInt | null) {
+  set accrualBlockTimestamp(value: BigInt | null) {
     if (value === null) {
-      this.unset("accrualBlockNumber");
+      this.unset("accrualBlockTimestamp");
     } else {
-      this.set("accrualBlockNumber", Value.fromBigInt(value as BigInt));
+      this.set("accrualBlockTimestamp", Value.fromBigInt(value as BigInt));
     }
   }
 
@@ -654,8 +654,8 @@ export class MarketHourlySnapshot extends Entity {
     this.set("underlyingPrice", Value.fromBigDecimal(value));
   }
 
-  get accrualBlockNumber(): BigInt | null {
-    let value = this.get("accrualBlockNumber");
+  get accrualBlockTimestamp(): BigInt | null {
+    let value = this.get("accrualBlockTimestamp");
     if (value === null || value.kind == ValueKind.NULL) {
       return null;
     } else {
@@ -663,11 +663,11 @@ export class MarketHourlySnapshot extends Entity {
     }
   }
 
-  set accrualBlockNumber(value: BigInt | null) {
+  set accrualBlockTimestamp(value: BigInt | null) {
     if (value === null) {
-      this.unset("accrualBlockNumber");
+      this.unset("accrualBlockTimestamp");
     } else {
-      this.set("accrualBlockNumber", Value.fromBigInt(value as BigInt));
+      this.set("accrualBlockTimestamp", Value.fromBigInt(value as BigInt));
     }
   }
 
@@ -933,8 +933,8 @@ export class MarketDailySnapshot extends Entity {
     this.set("underlyingPrice", Value.fromBigDecimal(value));
   }
 
-  get accrualBlockNumber(): BigInt | null {
-    let value = this.get("accrualBlockNumber");
+  get accrualBlockTimestamp(): BigInt | null {
+    let value = this.get("accrualBlockTimestamp");
     if (value === null || value.kind == ValueKind.NULL) {
       return null;
     } else {
@@ -942,11 +942,11 @@ export class MarketDailySnapshot extends Entity {
     }
   }
 
-  set accrualBlockNumber(value: BigInt | null) {
+  set accrualBlockTimestamp(value: BigInt | null) {
     if (value === null) {
-      this.unset("accrualBlockNumber");
+      this.unset("accrualBlockTimestamp");
     } else {
-      this.set("accrualBlockNumber", Value.fromBigInt(value as BigInt));
+      this.set("accrualBlockTimestamp", Value.fromBigInt(value as BigInt));
     }
   }
 
@@ -1059,8 +1059,8 @@ export class AccountMarketSnapshot extends Entity {
     this.set("accountMarket", Value.fromString(value));
   }
 
-  get accrualBlockNumber(): BigInt | null {
-    let value = this.get("accrualBlockNumber");
+  get accrualBlockTimestamp(): BigInt | null {
+    let value = this.get("accrualBlockTimestamp");
     if (value === null || value.kind == ValueKind.NULL) {
       return null;
     } else {
@@ -1068,11 +1068,11 @@ export class AccountMarketSnapshot extends Entity {
     }
   }
 
-  set accrualBlockNumber(value: BigInt | null) {
+  set accrualBlockTimestamp(value: BigInt | null) {
     if (value === null) {
-      this.unset("accrualBlockNumber");
+      this.unset("accrualBlockTimestamp");
     } else {
-      this.set("accrualBlockNumber", Value.fromBigInt(value as BigInt));
+      this.set("accrualBlockTimestamp", Value.fromBigInt(value as BigInt));
     }
   }
 
@@ -1282,13 +1282,13 @@ export class AccountCToken extends Entity {
     this.set("account", Value.fromString(value));
   }
 
-  get accrualBlockNumber(): BigInt {
-    let value = this.get("accrualBlockNumber");
+  get accrualBlockTimestamp(): BigInt {
+    let value = this.get("accrualBlockTimestamp");
     return value.toBigInt();
   }
 
-  set accrualBlockNumber(value: BigInt) {
-    this.set("accrualBlockNumber", Value.fromBigInt(value));
+  set accrualBlockTimestamp(value: BigInt) {
+    this.set("accrualBlockTimestamp", Value.fromBigInt(value));
   }
 
   get enteredMarket(): boolean {

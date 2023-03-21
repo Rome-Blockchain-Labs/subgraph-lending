@@ -44,8 +44,8 @@ interface MarketInfo {
   underlyingPrice: BigDecimal!
 
   # Fields that are not in compounds api
-  "Block the market is updated to"
-  accrualBlockNumber: BigInt
+  "Block timestamp the market is updated to"
+  accrualBlockTimestamp: BigInt
   "Timestamp the market was most recently updated"
   blockTimestamp: BigInt!
   "The history of the markets borrow index return (Think S&P 500)"
@@ -100,7 +100,7 @@ type Market implements MarketInfo @entity {
 
   # Fields that are not in compounds api
   "Block the market is updated to"
-  accrualBlockNumber: BigInt
+  accrualBlockTimestamp: BigInt
   "Timestamp the market was most recently updated"
   blockTimestamp: BigInt!
   "The history of the markets borrow index return (Think S&P 500)"
@@ -191,7 +191,7 @@ type MarketHourlySnapshot implements MarketInfo @entity {
 
   # Fields that are not in compounds api
   "Block the market is updated to"
-  accrualBlockNumber: BigInt
+  accrualBlockTimestamp: BigInt
   "Timestamp the market was most recently updated"
   blockTimestamp: BigInt!
   "The history of the markets borrow index return (Think S&P 500)"
@@ -254,7 +254,7 @@ type MarketDailySnapshot implements MarketInfo @entity {
 
   # Fields that are not in compounds api
   "Block the market is updated to"
-  accrualBlockNumber: BigInt
+  accrualBlockTimestamp: BigInt
   "Timestamp the market was most recently updated"
   blockTimestamp: BigInt!
   "The history of the markets borrow index return (Think S&P 500)"
@@ -279,7 +279,7 @@ type AccountMarketSnapshot @entity {
   "AccountId-MarketId"
   id: ID!
   accountMarket: AccountCToken!
-  accrualBlockNumber: BigInt
+  accrualBlockTimestamp: BigInt
   blockNumber: BigInt!
   timestamp: BigInt!
   totalSupplyAmount: BigDecimal!
@@ -334,7 +334,7 @@ type AccountCToken @entity {
   "Relation to user"
   account: Account!
   "Block number this asset was updated at in the contract"
-  accrualBlockNumber: BigInt!
+  accrualBlockTimestamp: BigInt!
   "True if user is entered, false if they are exited"
   enteredMarket: Boolean!
 
@@ -350,7 +350,7 @@ type AccountCToken @entity {
   totalUnderlyingBorrowed: BigDecimal!
   "Total amount underlying repaid"
   totalUnderlyingRepaid: BigDecimal!
-  "Current borrow balance stored in contract (exclusive of interest since accrualBlockNumber)"
+  "Current borrow balance stored in contract (exclusive of interest since accrualBlockTimestamp)"
   storedBorrowBalance: BigDecimal!
 
   "Historical snapshots for this Account-Market association"

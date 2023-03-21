@@ -40,7 +40,7 @@ export function handleMarketEntered(event: MarketEntered): void {
       market.id,
       market.symbol,
       accountID,
-      event.block.number
+      event.block.timestamp
     );
     cTokenStats.enteredMarket = true;
     cTokenStats.save();
@@ -130,10 +130,6 @@ export function handleNewPriceOracle(event: NewPriceOracle): void {
   }
   comptroller.priceOracle = event.params.newPriceOracle;
   comptroller.save();
-}
-
-export function handlehandleNewBlock(block: ethereum.Block): void {
-  // Define the granularity of blocks to skip to create a periodic snapshot
 }
 
 export function getOrCreateComptroller(): Comptroller {

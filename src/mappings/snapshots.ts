@@ -62,7 +62,7 @@ export function updateAccountMarketSnapshot(accountMarket: AccountCToken, market
   snapshot.totalSupplyAmount = accountMarket.cTokenBalance;
   snapshot.accountBorrowIndex = accountMarket.accountBorrowIndex;
   snapshot.exchangeRate = market.exchangeRate;
-  snapshot.accrualBlockNumber = market.accrualBlockNumber;
+  snapshot.accrualBlockTimestamp = market.accrualBlockTimestamp;
   snapshot.storedBorrowBalance = accountMarket.storedBorrowBalance;
   snapshot.marketBorrowIndex = market.borrowIndex;
 
@@ -130,35 +130,6 @@ function fillMarketSnapshotValues<S extends MarketDailySnapshot>(snapshot: S, ma
   snapshot.lastBlockNumber = blockNumber;
   snapshot.timestamp = normalizedTimestamp;
   snapshot.market = market.id;
-
-  // The code below manually copies the market fields into the snapshot. Only to be used if the "automatic" code above does not work
-  /*
-  snapshot.accrualBlockNumber = market.accrualBlockNumber;
-  snapshot.blockTimestamp = market.blockTimestamp;
-  snapshot.borrowIndex = market.borrowIndex;
-  snapshot.borrowRate = market.borrowRate;
-  snapshot.borrowersCount = market.borrowersCount;
-  snapshot.cash = market.cash;
-  snapshot.collateralFactor = market.collateralFactor;
-  snapshot.exchangeRate = market.exchangeRate;
-  snapshot.interestRateModelAddress = market.interestRateModelAddress;
-  snapshot.market = market.id;
-  snapshot.reserveFactor = market.reserveFactor;
-  snapshot.reserves = market.reserves;
-  snapshot.suppliersCount = market.suppliersCount;
-  snapshot.supplyRate = market.supplyRate;
-  snapshot.totalBorrows = market.totalBorrows;
-  snapshot.totalFeesGenerated = market.totalFeesGenerated;
-  snapshot.totalProtocolFeesGenerated = market.totalProtocolFeesGenerated;
-  snapshot.totalRewardsDistributed = market.totalRewardsDistributed;
-  snapshot.totalSupply = market.totalSupply;
-  snapshot.underlyingPrice = market.underlyingPrice;
-  snapshot.underlyingPriceUSD = market.underlyingPriceUSD;
-
-  snapshot.lastBlockHash = blockHash;
-  snapshot.lastBlockNumber = blockNumber;
-  snapshot.timestamp = normalizedTimestamp;
-  */
 }
 
 function extractHourlyTimestamp(timestamp: BigInt): BigInt {

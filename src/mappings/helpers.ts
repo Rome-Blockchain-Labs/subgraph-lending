@@ -30,7 +30,7 @@ export function createAccountCToken(
   cTokenStats.symbol = symbol;
   cTokenStats.market = marketID;
   cTokenStats.account = account;
-  cTokenStats.accrualBlockNumber = BigInt.fromI32(0);
+  cTokenStats.accrualBlockTimestamp = BigInt.fromI32(0);
   cTokenStats.cTokenBalance = zeroBD;
   cTokenStats.totalUnderlyingSupplied = zeroBD;
   cTokenStats.totalUnderlyingRedeemed = zeroBD;
@@ -55,14 +55,14 @@ export function updateCommonCTokenStats(
   marketID: string,
   marketSymbol: string,
   accountID: string,
-  blockNumber: BigInt
+  blockTimestamp: BigInt
 ): AccountCToken {
   let cTokenStatsID = getAccountCTokenId(marketID, accountID);
   let cTokenStats = AccountCToken.load(cTokenStatsID);
   if (cTokenStats == null) {
     cTokenStats = createAccountCToken(cTokenStatsID, marketSymbol, accountID, marketID);
   }
-  cTokenStats.accrualBlockNumber = blockNumber;
+  cTokenStats.accrualBlockTimestamp = blockTimestamp;
   return cTokenStats as AccountCToken;
 }
 

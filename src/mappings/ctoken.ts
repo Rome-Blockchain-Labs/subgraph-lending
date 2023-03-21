@@ -387,7 +387,7 @@ export function handleTransfer(event: Transfer): void {
   if (market == null) {
     market = createMarket(marketID);
   }
-  if (market.accrualBlockNumber != event.block.number) {
+  if (market.accrualBlockTimestamp != event.block.timestamp) {
     market = updateMarket(event.address, event.block.number, event.block.timestamp, event.block.hash);
   }
 

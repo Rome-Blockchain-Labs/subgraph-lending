@@ -328,7 +328,7 @@
   {
     "constant": true,
     "inputs": [],
-    "name": "accrualBlockNumber",
+    "name": "accrualBlockTimestamp",
     "outputs": [
       {
         "name": "",

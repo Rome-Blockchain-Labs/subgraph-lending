@@ -13,8 +13,6 @@ import { MANTISSA_FACTOR, QIAVAX_TOKEN_ADDRESS, WAVAX_TOKEN_ADDRESS } from "./co
 import { getOrCreateComptroller } from './comptroller';
 import { saveMarketSnapshots } from './snapshots';
 
-let cAVAXAddress = "0x5C0401e81Bc07Ca70fAD469b451682c0d747Ef1c";
-
 // Used for all cERC20 contracts
 function getTokenPrice(
   eventAddress: Address,
@@ -153,7 +151,7 @@ function getAVAXinUSD(): BigDecimal {
   let comptroller = getOrCreateComptroller();
   let oracleAddress = comptroller.priceOracle as Address;
   let oracle = PriceOracle2.bind(oracleAddress);
-  let tryPrice = oracle.try_getUnderlyingPrice(Address.fromString(cAVAXAddress));
+  let tryPrice = oracle.try_getUnderlyingPrice(Address.fromString(QIAVAX_TOKEN_ADDRESS));
 
   let ethPriceInUSD = tryPrice.reverted ? zeroBD : tryPrice.value.toBigDecimal().div(mantissaFactorBD);
 
@@ -175,7 +173,7 @@ export function updateMarket(marketAddress: Address, blockNumber: BigInt, blockT
     let avaxPriceInUSD = getAVAXinUSD();
 
     // if cAVAX, we only update USD price
-    if (market.id == cAVAXAddress) {
+    if (market.id == QIAVAX_TOKEN_ADDRESS) {
       market.underlyingPriceUSD = avaxPriceInUSD.truncate(market.underlyingDecimals);
     } else {
       let tokenPriceUSD = getTokenPrice(

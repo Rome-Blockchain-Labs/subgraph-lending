@@ -84,7 +84,7 @@ export function saveAccountCTokenEvent(
   let accountCTokenEvent = AccountCTokenEvent.load(id);
 
   if (accountCTokenEvent != null) {
-    return accountCTokenEvent!;
+    return accountCTokenEvent;
   }
   
   accountCTokenEvent = new AccountCTokenEvent(id);
@@ -95,5 +95,5 @@ export function saveAccountCTokenEvent(
   accountCTokenEvent.event = eventId;
   accountCTokenEvent.save();
 
-  return accountCTokenEvent!;
+  return accountCTokenEvent;
 }

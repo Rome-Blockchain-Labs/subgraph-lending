@@ -119,6 +119,8 @@ function fillMarketSnapshotValues<S extends MarketDailySnapshot>(snapshot: S, ma
 
   But this type constraint is not yet enforced on AssemblyScript yet, so any types could be sent to this method
   */
+  if (!snapshot)
+    return;
 
   let id = snapshot.id;
   for (let i = 0; i < market.entries.length; i++) {

@@ -422,7 +422,7 @@ export function handleTransfer(event: Transfer): void {
     cTokenStatsFrom.totalUnderlyingRedeemed = cTokenStatsFrom.totalUnderlyingRedeemed.plus(amountUnderlyingTruncated);
     cTokenStatsFrom.save();
 
-    updateAccountMarketSnapshot(cTokenStatsFrom, market!, event.block.number, event.block.timestamp);
+    updateAccountMarketSnapshot(cTokenStatsFrom, market, event.block.number, event.block.timestamp);
   }
 
   // Checking if the tx is TO the cToken contract (i.e. this will not run when redeeming)
@@ -455,10 +455,13 @@ export function handleTransfer(event: Transfer): void {
     cTokenStatsTo.totalUnderlyingSupplied = cTokenStatsTo.totalUnderlyingSupplied.plus(amountUnderlyingTruncated);
     cTokenStatsTo.save();
 
-    updateAccountMarketSnapshot(cTokenStatsTo, market!, event.block.number, event.block.timestamp);
+    updateAccountMarketSnapshot(cTokenStatsTo, market, event.block.number, event.block.timestamp);
   }
 
   let transferID = getCTokenEventId(event);
+
+  let from = event.params.from.toHexString();
+  let to = event.params.to.toHexString();
 
   let transfer = new TransferEvent(transferID);
   transfer.type = 'Transfer';
@@ -468,12 +471,12 @@ export function handleTransfer(event: Transfer): void {
   transfer.tx_hash = event.transaction.hash;
   transfer.logIndex = event.transactionLogIndex;
   transfer.amount = event.params.amount.toBigDecimal().div(cTokenDecimalsBD);
-  transfer.to = event.params.to.toHexString();
-  transfer.from = event.params.from.toHexString();
+  transfer.to = to;
+  transfer.from = from;
   transfer.save();
     
-  saveAccountCTokenEvent(market.id, transfer.from, transfer.id);
-  saveAccountCTokenEvent(market.id, transfer.to, transfer.id);
+  saveAccountCTokenEvent(market.id, from, transfer.id);
+  saveAccountCTokenEvent(market.id, to, transfer.id);
 }
 
 export function handleAccrueInterest(event: AccrueInterest): void {

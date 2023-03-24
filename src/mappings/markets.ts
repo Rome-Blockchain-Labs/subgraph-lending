@@ -20,7 +20,8 @@ function getTokenPrice(
   underlyingDecimals: i32
 ): BigDecimal {
   let comptroller = getOrCreateComptroller();
-  let oracleAddress = comptroller.priceOracle as Address;
+  // @ts-ignore
+  let oracleAddress = changetype<Address>(comptroller.priceOracle);
   let underlyingPrice: BigDecimal;
 
   /* 
@@ -89,10 +90,12 @@ export function getOrCreateToken(id: string): Token {
     token.address = Address.fromString(id);
     token.name = tokenContract.try_name().reverted ? null : tokenContract.try_name().value;
     token.symbol = tokenContract.try_symbol().reverted ? null : tokenContract.try_symbol().value;
-    token.decimals = tokenContract.try_decimals().reverted ? null : tokenContract.try_decimals().value;
+    if (!tokenContract.try_decimals().reverted) {
+      token.decimals =   tokenContract.try_decimals().value;
+    }
     token.totalSupply = tokenContract.try_totalSupply().reverted ? null : tokenContract.try_totalSupply().value;
   }
-  return token as Token;
+  return token;
 }
 
 function getOrCreateMarket(id: string, token: Token): Market {
@@ -149,7 +152,8 @@ function amountToDenomination(amount: BigInt, decimals: i32): BigDecimal {
 // Only to be used after block 10678764, since it's aimed to fix the change to USD based price oracle.
 function getAVAXinUSD(): BigDecimal {
   let comptroller = getOrCreateComptroller();
-  let oracleAddress = comptroller.priceOracle as Address;
+  // @ts-ignore
+  let oracleAddress = changetype<Address>(comptroller.priceOracle);
   let oracle = PriceOracle2.bind(oracleAddress);
   let tryPrice = oracle.try_getUnderlyingPrice(Address.fromString(QIAVAX_TOKEN_ADDRESS));
 
@@ -251,7 +255,7 @@ export function updateMarket(marketAddress: Address, blockNumber: BigInt, blockT
     }
     market.save();
 
-    saveMarketSnapshots(market!, blockTimestamp, blockNumber, blockHash);
+    saveMarketSnapshots(market, blockTimestamp, blockNumber, blockHash);
   }
   return market as Market;
 }

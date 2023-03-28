@@ -54,14 +54,6 @@ interface MarketInfo {
   reserveFactor: BigDecimal!
   "Underlying token price in USD"
   underlyingPriceUSD: BigDecimal!
-
-  # @yhayun - added specifically for benqi:
-  "Total rewards accrued per reward type. The array index is the same as the reward type index and the unit is that of the reward type"
-  totalRewardsDistributed: [BigDecimal!]!
-  "Total interest accrued"
-  totalFeesGenerated: BigDecimal!
-  "The part of total fees that goes to the protocol"
-  totalProtocolFeesGenerated: BigDecimal!
 }
 
 """
@@ -110,14 +102,6 @@ type Market implements MarketInfo @entity {
   "Underlying token price in USD"
   underlyingPriceUSD: BigDecimal!
 
-  # @yhayun - added specifically for benqi:
-  "Total rewards accrued per reward type. The array index is the same as the reward type index and the unit is that of the reward type"
-  totalRewardsDistributed: [BigDecimal!]!
-  "Total interest accrued"
-  totalFeesGenerated: BigDecimal!
-  "The part of total fees that goes to the protocol"
-  totalProtocolFeesGenerated: BigDecimal!
-  
   ### END OF INTERFACE FIELDS
 
   #Fields that match compounds API
@@ -125,8 +109,6 @@ type Market implements MarketInfo @entity {
   name: String!
   "CToken symbol"
   symbol: String!
-  "Underlying token address"
-  underlyingAddress: Bytes!
   "Underlying token name"
   underlyingName: String!
   "Underlying token symbol"
@@ -201,14 +183,6 @@ type MarketHourlySnapshot implements MarketInfo @entity {
   "Underlying token price in USD"
   underlyingPriceUSD: BigDecimal!
 
-  # @yhayun - added specifically for benqi:
-  "Total rewards accrued per reward type. The array index is the same as the reward type index and the unit is that of the reward type"
-  totalRewardsDistributed: [BigDecimal!]!
-  "Total interest accrued"
-  totalFeesGenerated: BigDecimal!
-  "The part of total fees that goes to the protocol"
-  totalProtocolFeesGenerated: BigDecimal!
-  
   ### END OF INTERFACE FIELDS
 }
 
@@ -264,14 +238,6 @@ type MarketDailySnapshot implements MarketInfo @entity {
   "Underlying token price in USD"
   underlyingPriceUSD: BigDecimal!
 
-  # @yhayun - added specifically for benqi:
-  "Total rewards accrued per reward type. The array index is the same as the reward type index and the unit is that of the reward type"
-  totalRewardsDistributed: [BigDecimal!]!
-  "Total interest accrued"
-  totalFeesGenerated: BigDecimal!
-  "The part of total fees that goes to the protocol"
-  totalProtocolFeesGenerated: BigDecimal!
-  
   ### END OF INTERFACE FIELDS
 }
 

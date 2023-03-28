@@ -32,6 +32,7 @@ import {
   saveAccountCTokenEvent,
   createAccountCToken,
   getAccountCTokenId,
+  zeroBD,
 } from "./helpers";
 import { updateAccountMarketSnapshot } from './snapshots';
 import { ethereum } from '@graphprotocol/graph-ts';
@@ -155,6 +156,7 @@ export function handleBorrow(event: Borrow): void {
   );
 
   let borrowAmountBD = event.params.borrowAmount.toBigDecimal().div(exponentToBigDecimal(market.underlyingDecimals));
+  let previousBorrow = cTokenStats.storedBorrowBalance;
 
   let accountBorrows = event.params.accountBorrows
     .toBigDecimal()
@@ -165,6 +167,14 @@ export function handleBorrow(event: Borrow): void {
   cTokenStats.accountBorrowIndex = market.borrowIndex;
   cTokenStats.totalUnderlyingBorrowed = cTokenStats.totalUnderlyingBorrowed.plus(borrowAmountBD);
   cTokenStats.save();
+  
+  if (
+    previousBorrow.equals(zeroBD) &&
+    !event.params.accountBorrows.toBigDecimal().equals(zeroBD) // checking edge case for borrwing 0
+  ) {
+    market.borrowersCount = market.borrowersCount + 1
+    market.save()
+  }
 
   let borrowID = getCTokenEventId(event);
 
@@ -240,6 +250,11 @@ export function handleRepayBorrow(event: RepayBorrow): void {
   cTokenStats.accountBorrowIndex = market.borrowIndex;
   cTokenStats.totalUnderlyingRepaid = cTokenStats.totalUnderlyingRepaid.plus(repayAmountBD);
   cTokenStats.save();
+
+  if (cTokenStats.storedBorrowBalance.equals(zeroBD)) {
+    market.borrowersCount = market.borrowersCount - 1
+    market.save()
+  }
 
   let repayID = getCTokenEventId(event);
 
@@ -441,6 +456,11 @@ export function handleTransfer(event: Transfer): void {
     updateAccountMarketSnapshot(cTokenStatsFrom, market, event.block.number, event.block.timestamp);
     // Only associate event with account if it's not the market account
     saveAccountCTokenEvent(market.id, accountFromID, transfer.id);
+    
+    if (cTokenStatsFrom.cTokenBalance.equals(zeroBD)) {
+      market.suppliersCount = market.suppliersCount - 1
+      market.save()
+    }
   }
 
   // Checking if the tx is TO the cToken contract (i.e. this will not run when redeeming)
@@ -462,6 +482,7 @@ export function handleTransfer(event: Transfer): void {
       event.block.number,
     );
 
+    let previousCTokenBalanceTo = cTokenStatsTo.cTokenBalance
     cTokenStatsTo.cTokenBalance = cTokenStatsTo.cTokenBalance.plus(
       event.params.amount
         .toBigDecimal()
@@ -471,6 +492,14 @@ export function handleTransfer(event: Transfer): void {
 
     cTokenStatsTo.totalUnderlyingSupplied = cTokenStatsTo.totalUnderlyingSupplied.plus(amountUnderlyingTruncated);
     cTokenStatsTo.save();
+    
+    if (
+      previousCTokenBalanceTo.equals(zeroBD) &&
+      !event.params.amount.toBigDecimal().equals(zeroBD) // checking edge case for transfers of 0
+    ) {
+      market.suppliersCount = market.suppliersCount + 1
+      market.save()
+    }
 
     updateAccountMarketSnapshot(cTokenStatsTo, market, event.block.number, event.block.timestamp);
     // Only associate event with account if it's not the market account

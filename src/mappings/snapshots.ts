@@ -76,38 +76,7 @@ export function updateAccountMarketSnapshot(accountMarket: AccountCToken, market
 
   snapshot.save();
 
-  let borrowIncrement = 0;
-  let supplyIncrement = 0;
-
-  if (previousBorrowAmount.equals(zeroBD) && snapshot.borrowBalanceWithInterest.gt(zeroBD)) {
-    // If the borrow amount passed from 0 to something, it's a new borrow
-    borrowIncrement = 1;
-  } else if (previousBorrowAmount.gt(zeroBD) && snapshot.borrowBalanceWithInterest.equals(zeroBD)) {
-    // else if the borrow began 0, the loan was closed
-    borrowIncrement = -1;
-  }
-
-  if (previousSupplyAmount.equals(zeroBD) && snapshot.totalSupplyAmount.gt(zeroBD)) {
-    // If the borrow amount passed from 0 to something, it's a new borrow
-    supplyIncrement = 1;
-  } else if (previousSupplyAmount.gt(zeroBD) && snapshot.totalSupplyAmount.equals(zeroBD)) {
-    // else if the borrow began 0, the loan was closed
-    supplyIncrement = -1;
-  }
-
-  if (supplyIncrement != 0 || borrowIncrement != 0) {
-    let market = Market.load(accountMarket.market);
-    
-    if (market) {
-      market.borrowersCount += borrowIncrement;
-      market.suppliersCount += supplyIncrement;
-      
-      market.save();
-    }
-  }
-
-  // Explicit cast needed for AssemblyScript
-  return snapshot as AccountMarketSnapshot;
+  return snapshot;
 }
 
 function fillMarketSnapshotValues<S extends MarketDailySnapshot>(snapshot: S, market: Market, normalizedTimestamp: BigInt, blockNumber: BigInt, blockHash: Bytes): void {

@@ -196,6 +196,7 @@ export function handleBorrow(event: Borrow): void {
   borrow.save();
 
   saveAccountCTokenEvent(market.id, borrow.borrower, borrow.id);
+  updateAccountMarketSnapshot(cTokenStats, market, event.block.number, event.block.timestamp);
 }
 
 export function getCTokenEventId(event: ethereum.Event): string {
@@ -277,6 +278,7 @@ export function handleRepayBorrow(event: RepayBorrow): void {
   repay.save();
 
   saveAccountCTokenEvent(market.id, repay.borrower, repay.id);
+  updateAccountMarketSnapshot(cTokenStats, market, event.block.number, event.block.timestamp);
 
   // Ensure account and accountCToken for payer
   if (repay.borrower != repay.payer) {

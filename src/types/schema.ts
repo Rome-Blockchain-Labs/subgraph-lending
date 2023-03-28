@@ -123,18 +123,8 @@ export class Market extends Entity {
     this.set("borrowIndex", Value.fromBigDecimal(BigDecimal.zero()));
     this.set("reserveFactor", Value.fromBigDecimal(BigDecimal.zero()));
     this.set("underlyingPriceUSD", Value.fromBigDecimal(BigDecimal.zero()));
-    this.set(
-      "totalRewardsDistributed",
-      Value.fromBigDecimalArray(new Array(0))
-    );
-    this.set("totalFeesGenerated", Value.fromBigDecimal(BigDecimal.zero()));
-    this.set(
-      "totalProtocolFeesGenerated",
-      Value.fromBigDecimal(BigDecimal.zero())
-    );
     this.set("name", Value.fromString(""));
     this.set("symbol", Value.fromString(""));
-    this.set("underlyingAddress", Value.fromBytes(Bytes.empty()));
     this.set("underlyingName", Value.fromString(""));
     this.set("underlyingSymbol", Value.fromString(""));
     this.set("underlyingDecimals", Value.fromI32(0));
@@ -350,33 +340,6 @@ export class Market extends Entity {
     this.set("underlyingPriceUSD", Value.fromBigDecimal(value));
   }
 
-  get totalRewardsDistributed(): Array<BigDecimal> {
-    let value = this.get("totalRewardsDistributed");
-    return value!.toBigDecimalArray();
-  }
-
-  set totalRewardsDistributed(value: Array<BigDecimal>) {
-    this.set("totalRewardsDistributed", Value.fromBigDecimalArray(value));
-  }
-
-  get totalFeesGenerated(): BigDecimal {
-    let value = this.get("totalFeesGenerated");
-    return value!.toBigDecimal();
-  }
-
-  set totalFeesGenerated(value: BigDecimal) {
-    this.set("totalFeesGenerated", Value.fromBigDecimal(value));
-  }
-
-  get totalProtocolFeesGenerated(): BigDecimal {
-    let value = this.get("totalProtocolFeesGenerated");
-    return value!.toBigDecimal();
-  }
-
-  set totalProtocolFeesGenerated(value: BigDecimal) {
-    this.set("totalProtocolFeesGenerated", Value.fromBigDecimal(value));
-  }
-
   get name(): string {
     let value = this.get("name");
     return value!.toString();
@@ -393,15 +356,6 @@ export class Market extends Entity {
 
   set symbol(value: string) {
     this.set("symbol", Value.fromString(value));
-  }
-
-  get underlyingAddress(): Bytes {
-    let value = this.get("underlyingAddress");
-    return value!.toBytes();
-  }
-
-  set underlyingAddress(value: Bytes) {
-    this.set("underlyingAddress", Value.fromBytes(value));
   }
 
   get underlyingName(): string {
@@ -507,15 +461,6 @@ export class MarketHourlySnapshot extends Entity {
     this.set("borrowIndex", Value.fromBigDecimal(BigDecimal.zero()));
     this.set("reserveFactor", Value.fromBigDecimal(BigDecimal.zero()));
     this.set("underlyingPriceUSD", Value.fromBigDecimal(BigDecimal.zero()));
-    this.set(
-      "totalRewardsDistributed",
-      Value.fromBigDecimalArray(new Array(0))
-    );
-    this.set("totalFeesGenerated", Value.fromBigDecimal(BigDecimal.zero()));
-    this.set(
-      "totalProtocolFeesGenerated",
-      Value.fromBigDecimal(BigDecimal.zero())
-    );
   }
 
   save(): void {
@@ -765,33 +710,6 @@ export class MarketHourlySnapshot extends Entity {
   set underlyingPriceUSD(value: BigDecimal) {
     this.set("underlyingPriceUSD", Value.fromBigDecimal(value));
   }
-
-  get totalRewardsDistributed(): Array<BigDecimal> {
-    let value = this.get("totalRewardsDistributed");
-    return value!.toBigDecimalArray();
-  }
-
-  set totalRewardsDistributed(value: Array<BigDecimal>) {
-    this.set("totalRewardsDistributed", Value.fromBigDecimalArray(value));
-  }
-
-  get totalFeesGenerated(): BigDecimal {
-    let value = this.get("totalFeesGenerated");
-    return value!.toBigDecimal();
-  }
-
-  set totalFeesGenerated(value: BigDecimal) {
-    this.set("totalFeesGenerated", Value.fromBigDecimal(value));
-  }
-
-  get totalProtocolFeesGenerated(): BigDecimal {
-    let value = this.get("totalProtocolFeesGenerated");
-    return value!.toBigDecimal();
-  }
-
-  set totalProtocolFeesGenerated(value: BigDecimal) {
-    this.set("totalProtocolFeesGenerated", Value.fromBigDecimal(value));
-  }
 }
 
 export class MarketDailySnapshot extends Entity {
@@ -816,15 +734,6 @@ export class MarketDailySnapshot extends Entity {
     this.set("borrowIndex", Value.fromBigDecimal(BigDecimal.zero()));
     this.set("reserveFactor", Value.fromBigDecimal(BigDecimal.zero()));
     this.set("underlyingPriceUSD", Value.fromBigDecimal(BigDecimal.zero()));
-    this.set(
-      "totalRewardsDistributed",
-      Value.fromBigDecimalArray(new Array(0))
-    );
-    this.set("totalFeesGenerated", Value.fromBigDecimal(BigDecimal.zero()));
-    this.set(
-      "totalProtocolFeesGenerated",
-      Value.fromBigDecimal(BigDecimal.zero())
-    );
   }
 
   save(): void {
@@ -1073,33 +982,6 @@ export class MarketDailySnapshot extends Entity {
 
   set underlyingPriceUSD(value: BigDecimal) {
     this.set("underlyingPriceUSD", Value.fromBigDecimal(value));
-  }
-
-  get totalRewardsDistributed(): Array<BigDecimal> {
-    let value = this.get("totalRewardsDistributed");
-    return value!.toBigDecimalArray();
-  }
-
-  set totalRewardsDistributed(value: Array<BigDecimal>) {
-    this.set("totalRewardsDistributed", Value.fromBigDecimalArray(value));
-  }
-
-  get totalFeesGenerated(): BigDecimal {
-    let value = this.get("totalFeesGenerated");
-    return value!.toBigDecimal();
-  }
-
-  set totalFeesGenerated(value: BigDecimal) {
-    this.set("totalFeesGenerated", Value.fromBigDecimal(value));
-  }
-
-  get totalProtocolFeesGenerated(): BigDecimal {
-    let value = this.get("totalProtocolFeesGenerated");
-    return value!.toBigDecimal();
-  }
-
-  set totalProtocolFeesGenerated(value: BigDecimal) {
-    this.set("totalProtocolFeesGenerated", Value.fromBigDecimal(value));
   }
 }
 

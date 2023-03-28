@@ -102,9 +102,6 @@ function getOrCreateMarket(id: string, token: Token): Market {
   let market = Market.load(id);
   if (market == null) {
     market = new Market(id);
-    market.totalRewardsDistributed = [];
-    market.totalFeesGenerated = zeroBD;
-    market.totalProtocolFeesGenerated = zeroBD;
     market.totalBorrows = zeroBD;
     market.totalSupply = zeroBD;
     market.supplyRate = zeroBD;

@@ -45,13 +45,12 @@ export function createMarket(marketAddress: string): Market {
   let ctokenAddress = Address.fromString(marketAddress);
   let ctoken = CToken.bind(ctokenAddress);
 
-  let tryDenomination = ctoken.try_underlying();
-  let tryName = ctoken.try_name();
-  let trySymbol = ctoken.try_symbol();
+  let tryInterestRateModel = ctoken.try_interestRateModel();
   let tryReserveFactorMantissa = ctoken.try_reserveFactorMantissa();
 
   if (ctokenAddress == Address.fromString(QIAVAX_TOKEN_ADDRESS) && !tryReserveFactorMantissa.reverted) {
     let market = getOrCreateMarket(marketAddress, null);
+    market.interestRateModelAddress = tryInterestRateModel.value;
     market.name = NATIVE_TOKEN_NAME;
     market.symbol = NATIVE_TOKEN_SYMBOL;
     market.underlyingSymbol = NATIVE_TOKEN_UNDERLYING_SYMBOL;
@@ -62,11 +61,16 @@ export function createMarket(marketAddress: string): Market {
     return market;
   }
 
+  let tryDenomination = ctoken.try_underlying();
+  let tryName = ctoken.try_name();
+  let trySymbol = ctoken.try_symbol();
+
   if (!tryDenomination.reverted && !tryName.reverted && !trySymbol.reverted && !tryReserveFactorMantissa.reverted) {
     let token = getOrCreateToken(tryDenomination.value.toHexString());
     token.save();
 
     let market = getOrCreateMarket(marketAddress, token);
+    market.interestRateModelAddress = tryInterestRateModel.value;
     market.denomination = token.id;
     market.name = tryName.value;
     market.symbol = trySymbol.value;

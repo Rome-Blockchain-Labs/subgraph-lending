@@ -34,7 +34,7 @@ import {
   getAccountCTokenId,
   zeroBD,
 } from "./helpers";
-import { updateAccountMarketSnapshot } from './snapshots';
+import { saveMarketSnapshots, updateAccountMarketSnapshot } from './snapshots';
 import { ethereum } from '@graphprotocol/graph-ts';
 
 /* Account supplies assets into market and receives cTokens in exchange
@@ -174,6 +174,7 @@ export function handleBorrow(event: Borrow): void {
   ) {
     market.borrowersCount = market.borrowersCount + 1
     market.save()
+    saveMarketSnapshots(market, event.block.timestamp, event.block.number, event.block.hash);
   }
 
   let borrowID = getCTokenEventId(event);
@@ -254,6 +255,7 @@ export function handleRepayBorrow(event: RepayBorrow): void {
   if (cTokenStats.storedBorrowBalance.equals(zeroBD)) {
     market.borrowersCount = market.borrowersCount - 1
     market.save()
+    saveMarketSnapshots(market, event.block.timestamp, event.block.number, event.block.hash);
   }
 
   let repayID = getCTokenEventId(event);
@@ -426,6 +428,8 @@ export function handleTransfer(event: Transfer): void {
   transfer.from = accountFromID;
   transfer.save();
 
+  let shouldSaveMarketSnapshot = false;
+
   // Checking if the tx is FROM the cToken contract (i.e. this will not run when minting)
   // If so, it is a mint, and we don't need to run these calculations
   if (accountFromID != marketID) {
@@ -460,6 +464,7 @@ export function handleTransfer(event: Transfer): void {
     if (cTokenStatsFrom.cTokenBalance.equals(zeroBD)) {
       market.suppliersCount = market.suppliersCount - 1
       market.save()
+      shouldSaveMarketSnapshot = true;
     }
   }
 
@@ -499,11 +504,16 @@ export function handleTransfer(event: Transfer): void {
     ) {
       market.suppliersCount = market.suppliersCount + 1
       market.save()
+      shouldSaveMarketSnapshot = true;
     }
 
     updateAccountMarketSnapshot(cTokenStatsTo, market, event.block.number, event.block.timestamp);
     // Only associate event with account if it's not the market account
     saveAccountCTokenEvent(market.id, accountToID, transfer.id);
+  }
+
+  if (shouldSaveMarketSnapshot) {
+    saveMarketSnapshots(market, event.block.timestamp, event.block.number, event.block.hash);
   }
 }
 

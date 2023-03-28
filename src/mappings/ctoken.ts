@@ -387,16 +387,32 @@ export function handleTransfer(event: Transfer): void {
   if (market == null) {
     market = createMarket(marketID);
   }
-  if (market.accrualBlockTimestamp != event.block.timestamp) {
-    market = updateMarket(event.address, event.block.number, event.block.timestamp, event.block.hash);
-  }
 
-  let amountUnderlying = market.exchangeRate.times(event.params.amount.toBigDecimal().div(cTokenDecimalsBD));
+  market = updateMarket(event.address, event.block.number, event.block.timestamp, event.block.hash);
+
+  let amountCToken = event.params.amount.toBigDecimal().div(cTokenDecimalsBD);
+  let amountUnderlying = market.exchangeRate.times(amountCToken);
   let amountUnderlyingTruncated = amountUnderlying.truncate(market.underlyingDecimals);
+
+  let transferID = getCTokenEventId(event);
+
+  let accountFromID = event.params.from.toHex();
+  let accountToID = event.params.to.toHex();
+
+  let transfer = new TransferEvent(transferID);
+  transfer.type = 'Transfer';
+  transfer.market = market.id;
+  transfer.blockNumber = event.block.number;
+  transfer.blockTime = event.block.timestamp;
+  transfer.tx_hash = event.transaction.hash;
+  transfer.logIndex = event.transactionLogIndex;
+  transfer.amount = amountCToken;
+  transfer.to = accountToID;
+  transfer.from = accountFromID;
+  transfer.save();
 
   // Checking if the tx is FROM the cToken contract (i.e. this will not run when minting)
   // If so, it is a mint, and we don't need to run these calculations
-  let accountFromID = event.params.from.toHex();
   if (accountFromID != marketID) {
     let accountFrom = Account.load(accountFromID);
     if (accountFrom == null) {
@@ -423,13 +439,14 @@ export function handleTransfer(event: Transfer): void {
     cTokenStatsFrom.save();
 
     updateAccountMarketSnapshot(cTokenStatsFrom, market, event.block.number, event.block.timestamp);
+    // Only associate event with account if it's not the market account
+    saveAccountCTokenEvent(market.id, accountFromID, transfer.id);
   }
 
   // Checking if the tx is TO the cToken contract (i.e. this will not run when redeeming)
   // If so, we ignore it. this leaves an edge case, where someone who accidentally sends
   // cTokens to a cToken contract, where it will not get recorded. Right now it would
   // be messy to include, so we are leaving it out for now TODO fix this in future
-  let accountToID = event.params.to.toHex();
   if (accountToID != marketID) {
     let accountTo = Account.load(accountToID);
     if (accountTo == null) {
@@ -456,27 +473,9 @@ export function handleTransfer(event: Transfer): void {
     cTokenStatsTo.save();
 
     updateAccountMarketSnapshot(cTokenStatsTo, market, event.block.number, event.block.timestamp);
+    // Only associate event with account if it's not the market account
+    saveAccountCTokenEvent(market.id, accountToID, transfer.id);
   }
-
-  let transferID = getCTokenEventId(event);
-
-  let from = event.params.from.toHexString();
-  let to = event.params.to.toHexString();
-
-  let transfer = new TransferEvent(transferID);
-  transfer.type = 'Transfer';
-  transfer.market = market.id;
-  transfer.blockNumber = event.block.number;
-  transfer.blockTime = event.block.timestamp;
-  transfer.tx_hash = event.transaction.hash;
-  transfer.logIndex = event.transactionLogIndex;
-  transfer.amount = event.params.amount.toBigDecimal().div(cTokenDecimalsBD);
-  transfer.to = to;
-  transfer.from = from;
-  transfer.save();
-    
-  saveAccountCTokenEvent(market.id, from, transfer.id);
-  saveAccountCTokenEvent(market.id, to, transfer.id);
 }
 
 export function handleAccrueInterest(event: AccrueInterest): void {

@@ -1,6 +1,6 @@
 specVersion: 0.0.2
 description: Benqi is an open-source protocol for algorithmic, efficient Money Markets on the Avalanche blockchain.
-repository: https://github.com/ChaosLabsInc/subgraph-benqi
+repository: https://github.com/Rome-Blockchain-Labs/subgraph-lending
 schema:
   file: ./schema.graphql
 dataSources:

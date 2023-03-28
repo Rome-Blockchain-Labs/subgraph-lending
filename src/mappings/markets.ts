@@ -9,7 +9,7 @@ import { ERC20 } from "../types/templates/CToken/ERC20";
 import { CToken } from "../types/templates/CToken/CToken";
 
 import { exponentToBigDecimal, mantissaFactor, mantissaFactorBD, cTokenDecimalsBD, zeroBD, zeroBI } from "./helpers";
-import { MANTISSA_FACTOR, QIAVAX_TOKEN_ADDRESS, WAVAX_TOKEN_ADDRESS } from "./constants";
+import { MANTISSA_FACTOR, NATIVE_TOKEN_NAME, NATIVE_TOKEN_SYMBOL, NATIVE_TOKEN_UNDERLYING_DECIMALS, NATIVE_TOKEN_UNDERLYING_SYMBOL, QIAVAX_TOKEN_ADDRESS } from "./constants";
 import { getOrCreateComptroller } from './comptroller';
 import { saveMarketSnapshots } from './snapshots';
 
@@ -51,13 +51,12 @@ export function createMarket(marketAddress: string): Market {
   let tryReserveFactorMantissa = ctoken.try_reserveFactorMantissa();
 
   if (ctokenAddress == Address.fromString(QIAVAX_TOKEN_ADDRESS) && !tryReserveFactorMantissa.reverted) {
-    let token = getOrCreateToken(WAVAX_TOKEN_ADDRESS);
-    token.save();
-
-    let market = getOrCreateMarket(marketAddress, token);
-    market.denomination = token.id;
-    market.name = "Benqi AVAX";
-    market.symbol = "qiAVAX";
+    let market = getOrCreateMarket(marketAddress, null);
+    market.name = NATIVE_TOKEN_NAME;
+    market.symbol = NATIVE_TOKEN_SYMBOL;
+    market.underlyingSymbol = NATIVE_TOKEN_UNDERLYING_SYMBOL;
+    market.underlyingName = NATIVE_TOKEN_UNDERLYING_SYMBOL;
+    market.underlyingDecimals = NATIVE_TOKEN_UNDERLYING_DECIMALS;
     market.reserveFactor = amountToDenomination(tryReserveFactorMantissa.value, MANTISSA_FACTOR);
     market.save();
     return market;
@@ -98,7 +97,7 @@ export function getOrCreateToken(id: string): Token {
   return token;
 }
 
-function getOrCreateMarket(id: string, token: Token): Market {
+function getOrCreateMarket(id: string, token: Token | null): Market {
   let market = Market.load(id);
   if (market == null) {
     market = new Market(id);
@@ -107,12 +106,15 @@ function getOrCreateMarket(id: string, token: Token): Market {
     market.supplyRate = zeroBD;
     market.exchangeRate = zeroBD;
     market.reserveFactor = zeroBD;
-    market.denomination = token.id;
-    market.underlyingAddress = token.address;
-    market.underlyingName = token.name!;
-    market.underlyingDecimals = token.decimals;
+
+    if (token) {
+      market.denomination = token.id;
+      market.underlyingName = token.name!;
+      market.underlyingDecimals = token.decimals;
+      market.underlyingSymbol = token.symbol!;
+    }
+
     market.underlyingPrice = zeroBD;
-    market.underlyingSymbol = token.symbol!;
     market.underlyingPriceUSD = zeroBD;
     market.borrowRate = zeroBD;
     market.collateralFactor = zeroBD;
@@ -146,7 +148,6 @@ function amountToDenomination(amount: BigInt, decimals: i32): BigDecimal {
   );
 }
 
-// Only to be used after block 10678764, since it's aimed to fix the change to USD based price oracle.
 function getAVAXinUSD(): BigDecimal {
   let comptroller = getOrCreateComptroller();
   // @ts-ignore

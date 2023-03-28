@@ -130,6 +130,7 @@ function getOrCreateMarket(id: string, token: Token | null): Market {
     market.symbol = "";
     market.suppliersCount = 0;
     market.borrowersCount = 0;
+    market.reserves = zeroBD;
   }
   return market as Market;
 }

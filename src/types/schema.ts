@@ -15,8 +15,6 @@ export class Comptroller extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
-
-    this.set("address", Value.fromBytes(Bytes.empty()));
   }
 
   save(): void {
@@ -109,25 +107,6 @@ export class Market extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
-
-    this.set("borrowRate", Value.fromBigDecimal(BigDecimal.zero()));
-    this.set("cash", Value.fromBigDecimal(BigDecimal.zero()));
-    this.set("collateralFactor", Value.fromBigDecimal(BigDecimal.zero()));
-    this.set("exchangeRate", Value.fromBigDecimal(BigDecimal.zero()));
-    this.set("totalBorrows", Value.fromBigDecimal(BigDecimal.zero()));
-    this.set("totalSupply", Value.fromBigDecimal(BigDecimal.zero()));
-    this.set("suppliersCount", Value.fromI32(0));
-    this.set("borrowersCount", Value.fromI32(0));
-    this.set("underlyingPrice", Value.fromBigDecimal(BigDecimal.zero()));
-    this.set("blockTimestamp", Value.fromBigInt(BigInt.zero()));
-    this.set("borrowIndex", Value.fromBigDecimal(BigDecimal.zero()));
-    this.set("reserveFactor", Value.fromBigDecimal(BigDecimal.zero()));
-    this.set("underlyingPriceUSD", Value.fromBigDecimal(BigDecimal.zero()));
-    this.set("name", Value.fromString(""));
-    this.set("symbol", Value.fromString(""));
-    this.set("underlyingName", Value.fromString(""));
-    this.set("underlyingSymbol", Value.fromString(""));
-    this.set("underlyingDecimals", Value.fromI32(0));
   }
 
   save(): void {
@@ -443,24 +422,6 @@ export class MarketHourlySnapshot extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
-
-    this.set("market", Value.fromString(""));
-    this.set("timestamp", Value.fromBigInt(BigInt.zero()));
-    this.set("lastBlockNumber", Value.fromBigInt(BigInt.zero()));
-    this.set("lastBlockHash", Value.fromBytes(Bytes.empty()));
-    this.set("borrowRate", Value.fromBigDecimal(BigDecimal.zero()));
-    this.set("cash", Value.fromBigDecimal(BigDecimal.zero()));
-    this.set("collateralFactor", Value.fromBigDecimal(BigDecimal.zero()));
-    this.set("exchangeRate", Value.fromBigDecimal(BigDecimal.zero()));
-    this.set("totalBorrows", Value.fromBigDecimal(BigDecimal.zero()));
-    this.set("totalSupply", Value.fromBigDecimal(BigDecimal.zero()));
-    this.set("suppliersCount", Value.fromI32(0));
-    this.set("borrowersCount", Value.fromI32(0));
-    this.set("underlyingPrice", Value.fromBigDecimal(BigDecimal.zero()));
-    this.set("blockTimestamp", Value.fromBigInt(BigInt.zero()));
-    this.set("borrowIndex", Value.fromBigDecimal(BigDecimal.zero()));
-    this.set("reserveFactor", Value.fromBigDecimal(BigDecimal.zero()));
-    this.set("underlyingPriceUSD", Value.fromBigDecimal(BigDecimal.zero()));
   }
 
   save(): void {
@@ -716,24 +677,6 @@ export class MarketDailySnapshot extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
-
-    this.set("market", Value.fromString(""));
-    this.set("timestamp", Value.fromBigInt(BigInt.zero()));
-    this.set("lastBlockNumber", Value.fromBigInt(BigInt.zero()));
-    this.set("lastBlockHash", Value.fromBytes(Bytes.empty()));
-    this.set("borrowRate", Value.fromBigDecimal(BigDecimal.zero()));
-    this.set("cash", Value.fromBigDecimal(BigDecimal.zero()));
-    this.set("collateralFactor", Value.fromBigDecimal(BigDecimal.zero()));
-    this.set("exchangeRate", Value.fromBigDecimal(BigDecimal.zero()));
-    this.set("totalBorrows", Value.fromBigDecimal(BigDecimal.zero()));
-    this.set("totalSupply", Value.fromBigDecimal(BigDecimal.zero()));
-    this.set("suppliersCount", Value.fromI32(0));
-    this.set("borrowersCount", Value.fromI32(0));
-    this.set("underlyingPrice", Value.fromBigDecimal(BigDecimal.zero()));
-    this.set("blockTimestamp", Value.fromBigInt(BigInt.zero()));
-    this.set("borrowIndex", Value.fromBigDecimal(BigDecimal.zero()));
-    this.set("reserveFactor", Value.fromBigDecimal(BigDecimal.zero()));
-    this.set("underlyingPriceUSD", Value.fromBigDecimal(BigDecimal.zero()));
   }
 
   save(): void {
@@ -989,19 +932,6 @@ export class AccountMarketSnapshot extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
-
-    this.set("accountMarket", Value.fromString(""));
-    this.set("blockNumber", Value.fromBigInt(BigInt.zero()));
-    this.set("timestamp", Value.fromBigInt(BigInt.zero()));
-    this.set("totalSupplyAmount", Value.fromBigDecimal(BigDecimal.zero()));
-    this.set("storedBorrowBalance", Value.fromBigDecimal(BigDecimal.zero()));
-    this.set(
-      "borrowBalanceWithInterest",
-      Value.fromBigDecimal(BigDecimal.zero())
-    );
-    this.set("marketBorrowIndex", Value.fromBigDecimal(BigDecimal.zero()));
-    this.set("accountBorrowIndex", Value.fromBigDecimal(BigDecimal.zero()));
-    this.set("exchangeRate", Value.fromBigDecimal(BigDecimal.zero()));
   }
 
   save(): void {
@@ -1137,10 +1067,6 @@ export class Account extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
-
-    this.set("countLiquidated", Value.fromI32(0));
-    this.set("countLiquidator", Value.fromI32(0));
-    this.set("hasBorrowed", Value.fromBoolean(false));
   }
 
   save(): void {
@@ -1218,28 +1144,6 @@ export class AccountCToken extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
-
-    this.set("market", Value.fromString(""));
-    this.set("symbol", Value.fromString(""));
-    this.set("account", Value.fromString(""));
-    this.set("accrualBlockTimestamp", Value.fromBigInt(BigInt.zero()));
-    this.set("enteredMarket", Value.fromBoolean(false));
-    this.set("cTokenBalance", Value.fromBigDecimal(BigDecimal.zero()));
-    this.set(
-      "totalUnderlyingSupplied",
-      Value.fromBigDecimal(BigDecimal.zero())
-    );
-    this.set(
-      "totalUnderlyingRedeemed",
-      Value.fromBigDecimal(BigDecimal.zero())
-    );
-    this.set("accountBorrowIndex", Value.fromBigDecimal(BigDecimal.zero()));
-    this.set(
-      "totalUnderlyingBorrowed",
-      Value.fromBigDecimal(BigDecimal.zero())
-    );
-    this.set("totalUnderlyingRepaid", Value.fromBigDecimal(BigDecimal.zero()));
-    this.set("storedBorrowBalance", Value.fromBigDecimal(BigDecimal.zero()));
   }
 
   save(): void {
@@ -1398,11 +1302,6 @@ export class AccountCTokenEvent extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
-
-    this.set("account", Value.fromString(""));
-    this.set("market", Value.fromString(""));
-    this.set("event", Value.fromString(""));
-    this.set("accountCToken", Value.fromString(""));
   }
 
   save(): void {
@@ -1473,14 +1372,6 @@ export class TransferEvent extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
-
-    this.set("type", Value.fromString(""));
-    this.set("tx_hash", Value.fromBytes(Bytes.empty()));
-    this.set("logIndex", Value.fromBigInt(BigInt.zero()));
-    this.set("market", Value.fromString(""));
-    this.set("amount", Value.fromBigDecimal(BigDecimal.zero()));
-    this.set("blockNumber", Value.fromBigInt(BigInt.zero()));
-    this.set("blockTime", Value.fromBigInt(BigInt.zero()));
   }
 
   save(): void {
@@ -1610,15 +1501,6 @@ export class MintEvent extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
-
-    this.set("type", Value.fromString(""));
-    this.set("tx_hash", Value.fromBytes(Bytes.empty()));
-    this.set("logIndex", Value.fromBigInt(BigInt.zero()));
-    this.set("market", Value.fromString(""));
-    this.set("user", Value.fromString(""));
-    this.set("amount", Value.fromBigDecimal(BigDecimal.zero()));
-    this.set("blockNumber", Value.fromBigInt(BigInt.zero()));
-    this.set("blockTime", Value.fromBigInt(BigInt.zero()));
   }
 
   save(): void {
@@ -1740,15 +1622,6 @@ export class RedeemEvent extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
-
-    this.set("type", Value.fromString(""));
-    this.set("tx_hash", Value.fromBytes(Bytes.empty()));
-    this.set("logIndex", Value.fromBigInt(BigInt.zero()));
-    this.set("market", Value.fromString(""));
-    this.set("user", Value.fromString(""));
-    this.set("amount", Value.fromBigDecimal(BigDecimal.zero()));
-    this.set("blockNumber", Value.fromBigInt(BigInt.zero()));
-    this.set("blockTime", Value.fromBigInt(BigInt.zero()));
   }
 
   save(): void {
@@ -1870,19 +1743,6 @@ export class LiquidationEvent extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
-
-    this.set("type", Value.fromString(""));
-    this.set("tx_hash", Value.fromBytes(Bytes.empty()));
-    this.set("logIndex", Value.fromBigInt(BigInt.zero()));
-    this.set("seizedMarket", Value.fromString(""));
-    this.set("repayMarket", Value.fromString(""));
-    this.set("liquidator", Value.fromString(""));
-    this.set("borrower", Value.fromString(""));
-    this.set("seizedTokens", Value.fromBigDecimal(BigDecimal.zero()));
-    this.set("underlyingSymbol", Value.fromString(""));
-    this.set("underlyingRepayAmount", Value.fromBigDecimal(BigDecimal.zero()));
-    this.set("blockNumber", Value.fromBigInt(BigInt.zero()));
-    this.set("blockTime", Value.fromBigInt(BigInt.zero()));
   }
 
   save(): void {
@@ -2025,17 +1885,6 @@ export class BorrowEvent extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
-
-    this.set("type", Value.fromString(""));
-    this.set("tx_hash", Value.fromBytes(Bytes.empty()));
-    this.set("logIndex", Value.fromBigInt(BigInt.zero()));
-    this.set("market", Value.fromString(""));
-    this.set("borrower", Value.fromString(""));
-    this.set("amount", Value.fromBigDecimal(BigDecimal.zero()));
-    this.set("accountBorrows", Value.fromBigDecimal(BigDecimal.zero()));
-    this.set("underlyingSymbol", Value.fromString(""));
-    this.set("blockNumber", Value.fromBigInt(BigInt.zero()));
-    this.set("blockTime", Value.fromBigInt(BigInt.zero()));
   }
 
   save(): void {
@@ -2158,18 +2007,6 @@ export class RepayEvent extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
-
-    this.set("type", Value.fromString(""));
-    this.set("tx_hash", Value.fromBytes(Bytes.empty()));
-    this.set("logIndex", Value.fromBigInt(BigInt.zero()));
-    this.set("market", Value.fromString(""));
-    this.set("borrower", Value.fromString(""));
-    this.set("payer", Value.fromString(""));
-    this.set("amount", Value.fromBigDecimal(BigDecimal.zero()));
-    this.set("accountBorrows", Value.fromBigDecimal(BigDecimal.zero()));
-    this.set("underlyingSymbol", Value.fromString(""));
-    this.set("blockNumber", Value.fromBigInt(BigInt.zero()));
-    this.set("blockTime", Value.fromBigInt(BigInt.zero()));
   }
 
   save(): void {
@@ -2301,14 +2138,6 @@ export class MarketEnteredEvent extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
-
-    this.set("type", Value.fromString(""));
-    this.set("tx_hash", Value.fromBytes(Bytes.empty()));
-    this.set("logIndex", Value.fromBigInt(BigInt.zero()));
-    this.set("market", Value.fromString(""));
-    this.set("account", Value.fromString(""));
-    this.set("blockNumber", Value.fromBigInt(BigInt.zero()));
-    this.set("blockTime", Value.fromBigInt(BigInt.zero()));
   }
 
   save(): void {
@@ -2406,14 +2235,6 @@ export class MarketExitedEvent extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
-
-    this.set("type", Value.fromString(""));
-    this.set("tx_hash", Value.fromBytes(Bytes.empty()));
-    this.set("logIndex", Value.fromBigInt(BigInt.zero()));
-    this.set("market", Value.fromString(""));
-    this.set("account", Value.fromString(""));
-    this.set("blockNumber", Value.fromBigInt(BigInt.zero()));
-    this.set("blockTime", Value.fromBigInt(BigInt.zero()));
   }
 
   save(): void {
@@ -2511,8 +2332,6 @@ export class Token extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
-
-    this.set("address", Value.fromBytes(Bytes.empty()));
   }
 
   save(): void {

@@ -1,10 +1,10 @@
-specVersion: 0.0.2
+specVersion: 0.0.5
 description: Benqi is an open-source protocol for algorithmic, efficient Money Markets on the Avalanche blockchain.
 repository: https://github.com/Rome-Blockchain-Labs/subgraph-lending
 schema:
   file: ./schema.graphql
 dataSources:
-  - kind: ethereum/contract
+  - kind: ethereum
     name: Comptroller
     network: avalanche
     source:
@@ -13,7 +13,7 @@ dataSources:
       startBlock: 3046285 # comptroller created on https://snowtrace.io/block/3046286
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.6
+      apiVersion: 0.0.7
       language: wasm/assemblyscript
       file: ./src/mappings/comptroller.ts
       entities:
@@ -58,13 +58,13 @@ dataSources:
           handler: handleNewLiquidationIncentive
 templates:
   - name: CToken
-    kind: ethereum/contract
+    kind: ethereum
     network: avalanche
     source:
       abi: CToken
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.6
+      apiVersion: 0.0.7
       language: wasm/assemblyscript
       file: ./src/mappings/ctoken.ts
       entities:

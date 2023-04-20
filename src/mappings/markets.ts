@@ -13,6 +13,9 @@ import { MANTISSA_FACTOR, NATIVE_TOKEN_NAME, NATIVE_TOKEN_SYMBOL, NATIVE_TOKEN_U
 import { getOrCreateComptroller } from './comptroller';
 import { saveMarketSnapshots } from './snapshots';
 
+let secondsInDay = BigDecimal.fromString('86400');
+let oneBD = BigDecimal.fromString('1');
+
 // Used for all cERC20 contracts
 function getTokenPrice(
   eventAddress: Address,
@@ -252,12 +255,7 @@ export function updateMarket(marketAddress: Address, blockNumber: BigInt, blockT
 
     market.borrowRatePerTimestamp = contract.borrowRatePerTimestamp();
 
-    // Must convert to BigDecimal, and remove 10^18 that is used for Exp in Compound Solidity
-    market.borrowRateAPY = market.borrowRatePerTimestamp
-      .toBigDecimal()
-      .times(BigDecimal.fromString("31536000")) // 31.536.000 seconds per year
-      .div(mantissaFactorBD)
-      .truncate(mantissaFactor);
+    market.borrowRateAPY = getAPY(market.borrowRatePerTimestamp.toBigDecimal());
 
     let supplyRatePerTimestamp = contract.try_supplyRatePerTimestamp();
     if (supplyRatePerTimestamp.reverted) {
@@ -267,14 +265,37 @@ export function updateMarket(marketAddress: Address, blockNumber: BigInt, blockT
       market.supplyRatePerTimestamp = supplyRatePerTimestamp.value
     }
     
-    market.supplyRateAPY = market.supplyRatePerTimestamp.toBigDecimal()
-        .times(BigDecimal.fromString('31536000'))
-        .div(mantissaFactorBD)
-        .truncate(mantissaFactor)
+    market.supplyRateAPY = getAPY(market.supplyRatePerTimestamp.toBigDecimal());
 
     market.save();
 
     saveMarketSnapshots(market, blockTimestamp, blockNumber, blockHash);
   }
   return market as Market;
+}
+
+function getAPY(valuePerSecond: BigDecimal): BigDecimal {
+  return pow(
+      valuePerSecond
+        .div(mantissaFactorBD)
+        .times(secondsInDay)
+        .plus(oneBD)
+      , 365
+    )
+    .minus(oneBD)
+    .truncate(mantissaFactor);
+}
+
+function pow(base: BigDecimal, exponent: number): BigDecimal {
+  let result = base;
+
+  if (exponent == 0) {
+    return BigDecimal.fromString('1');
+  }
+
+  for (let i = 2; i <= exponent; i++) {
+    result = result.times(base);
+  }
+
+  return result;
 }

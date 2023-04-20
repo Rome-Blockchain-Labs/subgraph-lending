@@ -134,13 +134,22 @@ export class Market extends Entity {
     this.set("id", Value.fromString(value));
   }
 
-  get borrowRate(): BigDecimal {
-    let value = this.get("borrowRate");
+  get borrowRatePerTimestamp(): BigInt {
+    let value = this.get("borrowRatePerTimestamp");
+    return value!.toBigInt();
+  }
+
+  set borrowRatePerTimestamp(value: BigInt) {
+    this.set("borrowRatePerTimestamp", Value.fromBigInt(value));
+  }
+
+  get borrowRateAPY(): BigDecimal {
+    let value = this.get("borrowRateAPY");
     return value!.toBigDecimal();
   }
 
-  set borrowRate(value: BigDecimal) {
-    this.set("borrowRate", Value.fromBigDecimal(value));
+  set borrowRateAPY(value: BigDecimal) {
+    this.set("borrowRateAPY", Value.fromBigDecimal(value));
   }
 
   get cash(): BigDecimal {
@@ -204,8 +213,17 @@ export class Market extends Entity {
     }
   }
 
-  get supplyRate(): BigDecimal | null {
-    let value = this.get("supplyRate");
+  get supplyRatePerTimestamp(): BigInt {
+    let value = this.get("supplyRatePerTimestamp");
+    return value!.toBigInt();
+  }
+
+  set supplyRatePerTimestamp(value: BigInt) {
+    this.set("supplyRatePerTimestamp", Value.fromBigInt(value));
+  }
+
+  get supplyRateAPY(): BigDecimal | null {
+    let value = this.get("supplyRateAPY");
     if (!value || value.kind == ValueKind.NULL) {
       return null;
     } else {
@@ -213,11 +231,11 @@ export class Market extends Entity {
     }
   }
 
-  set supplyRate(value: BigDecimal | null) {
+  set supplyRateAPY(value: BigDecimal | null) {
     if (!value) {
-      this.unset("supplyRate");
+      this.unset("supplyRateAPY");
     } else {
-      this.set("supplyRate", Value.fromBigDecimal(<BigDecimal>value));
+      this.set("supplyRateAPY", Value.fromBigDecimal(<BigDecimal>value));
     }
   }
 
@@ -487,13 +505,22 @@ export class MarketHourlySnapshot extends Entity {
     this.set("lastBlockHash", Value.fromBytes(value));
   }
 
-  get borrowRate(): BigDecimal {
-    let value = this.get("borrowRate");
+  get borrowRatePerTimestamp(): BigInt {
+    let value = this.get("borrowRatePerTimestamp");
+    return value!.toBigInt();
+  }
+
+  set borrowRatePerTimestamp(value: BigInt) {
+    this.set("borrowRatePerTimestamp", Value.fromBigInt(value));
+  }
+
+  get borrowRateAPY(): BigDecimal {
+    let value = this.get("borrowRateAPY");
     return value!.toBigDecimal();
   }
 
-  set borrowRate(value: BigDecimal) {
-    this.set("borrowRate", Value.fromBigDecimal(value));
+  set borrowRateAPY(value: BigDecimal) {
+    this.set("borrowRateAPY", Value.fromBigDecimal(value));
   }
 
   get cash(): BigDecimal {
@@ -557,8 +584,17 @@ export class MarketHourlySnapshot extends Entity {
     }
   }
 
-  get supplyRate(): BigDecimal | null {
-    let value = this.get("supplyRate");
+  get supplyRatePerTimestamp(): BigInt {
+    let value = this.get("supplyRatePerTimestamp");
+    return value!.toBigInt();
+  }
+
+  set supplyRatePerTimestamp(value: BigInt) {
+    this.set("supplyRatePerTimestamp", Value.fromBigInt(value));
+  }
+
+  get supplyRateAPY(): BigDecimal | null {
+    let value = this.get("supplyRateAPY");
     if (!value || value.kind == ValueKind.NULL) {
       return null;
     } else {
@@ -566,11 +602,11 @@ export class MarketHourlySnapshot extends Entity {
     }
   }
 
-  set supplyRate(value: BigDecimal | null) {
+  set supplyRateAPY(value: BigDecimal | null) {
     if (!value) {
-      this.unset("supplyRate");
+      this.unset("supplyRateAPY");
     } else {
-      this.set("supplyRate", Value.fromBigDecimal(<BigDecimal>value));
+      this.set("supplyRateAPY", Value.fromBigDecimal(<BigDecimal>value));
     }
   }
 
@@ -742,13 +778,22 @@ export class MarketDailySnapshot extends Entity {
     this.set("lastBlockHash", Value.fromBytes(value));
   }
 
-  get borrowRate(): BigDecimal {
-    let value = this.get("borrowRate");
+  get borrowRatePerTimestamp(): BigInt {
+    let value = this.get("borrowRatePerTimestamp");
+    return value!.toBigInt();
+  }
+
+  set borrowRatePerTimestamp(value: BigInt) {
+    this.set("borrowRatePerTimestamp", Value.fromBigInt(value));
+  }
+
+  get borrowRateAPY(): BigDecimal {
+    let value = this.get("borrowRateAPY");
     return value!.toBigDecimal();
   }
 
-  set borrowRate(value: BigDecimal) {
-    this.set("borrowRate", Value.fromBigDecimal(value));
+  set borrowRateAPY(value: BigDecimal) {
+    this.set("borrowRateAPY", Value.fromBigDecimal(value));
   }
 
   get cash(): BigDecimal {
@@ -812,8 +857,17 @@ export class MarketDailySnapshot extends Entity {
     }
   }
 
-  get supplyRate(): BigDecimal | null {
-    let value = this.get("supplyRate");
+  get supplyRatePerTimestamp(): BigInt {
+    let value = this.get("supplyRatePerTimestamp");
+    return value!.toBigInt();
+  }
+
+  set supplyRatePerTimestamp(value: BigInt) {
+    this.set("supplyRatePerTimestamp", Value.fromBigInt(value));
+  }
+
+  get supplyRateAPY(): BigDecimal | null {
+    let value = this.get("supplyRateAPY");
     if (!value || value.kind == ValueKind.NULL) {
       return null;
     } else {
@@ -821,11 +875,11 @@ export class MarketDailySnapshot extends Entity {
     }
   }
 
-  set supplyRate(value: BigDecimal | null) {
+  set supplyRateAPY(value: BigDecimal | null) {
     if (!value) {
-      this.unset("supplyRate");
+      this.unset("supplyRateAPY");
     } else {
-      this.set("supplyRate", Value.fromBigDecimal(<BigDecimal>value));
+      this.set("supplyRateAPY", Value.fromBigDecimal(<BigDecimal>value));
     }
   }
 

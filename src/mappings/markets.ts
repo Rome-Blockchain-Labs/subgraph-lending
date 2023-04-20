@@ -107,7 +107,8 @@ function getOrCreateMarket(id: string, token: Token | null): Market {
     market = new Market(id);
     market.totalBorrows = zeroBD;
     market.totalSupply = zeroBD;
-    market.supplyRate = zeroBD;
+    market.supplyRatePerTimestamp = zeroBI;
+    market.supplyRateAPY = zeroBD;
     market.exchangeRate = zeroBD;
     market.reserveFactor = zeroBD;
 
@@ -120,7 +121,8 @@ function getOrCreateMarket(id: string, token: Token | null): Market {
 
     market.underlyingPrice = zeroBD;
     market.underlyingPriceUSD = zeroBD;
-    market.borrowRate = zeroBD;
+    market.borrowRatePerTimestamp = zeroBI;
+    market.borrowRateAPY = zeroBD;
     market.collateralFactor = zeroBD;
     market.cash = zeroBD;
     market.accrualBlockTimestamp = zeroBI;
@@ -237,9 +239,10 @@ export function updateMarket(marketAddress: Address, blockNumber: BigInt, blockT
       .div(exponentToBigDecimal(market.underlyingDecimals))
       .truncate(market.underlyingDecimals);
 
+    market.borrowRatePerTimestamp = contract.borrowRatePerTimestamp();
+
     // Must convert to BigDecimal, and remove 10^18 that is used for Exp in Compound Solidity
-    market.borrowRate = contract
-      .borrowRatePerTimestamp()
+    market.borrowRateAPY = market.borrowRatePerTimestamp
       .toBigDecimal()
       .times(BigDecimal.fromString("31536000")) // 31.536.000 seconds per year
       .div(mantissaFactorBD)
@@ -248,14 +251,16 @@ export function updateMarket(marketAddress: Address, blockNumber: BigInt, blockT
     let supplyRatePerTimestamp = contract.try_supplyRatePerTimestamp();
     if (supplyRatePerTimestamp.reverted) {
       log.info('***CALL FAILED*** : cERC20 supplyRatePerBlock() reverted', [])
-      market.supplyRate = zeroBD
+      market.supplyRatePerTimestamp = zeroBI
     } else {
-      market.supplyRate = supplyRatePerTimestamp.value
-        .toBigDecimal()
+      market.supplyRatePerTimestamp = supplyRatePerTimestamp.value
+    }
+    
+    market.supplyRateAPY = market.supplyRatePerTimestamp.toBigDecimal()
         .times(BigDecimal.fromString('31536000'))
         .div(mantissaFactorBD)
         .truncate(mantissaFactor)
-    }
+
     market.save();
 
     saveMarketSnapshots(market, blockTimestamp, blockNumber, blockHash);

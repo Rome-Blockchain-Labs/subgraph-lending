@@ -18,8 +18,10 @@ type Comptroller @entity {
 interface MarketInfo {
   
   #Fields that match compounds API
-  "Yearly borrow rate. With 2102400 blocks per year"
-  borrowRate: BigDecimal!
+  "Borrow interest rate for the current timestamp based on utilization rate"
+  borrowRatePerTimestamp: BigInt!
+  "Yearly borrow rate. With 31536000 seconds per year"
+  borrowRateAPY: BigDecimal!
   "The cToken contract balance of ERC20 or ETH"
   cash: BigDecimal!
   "Collateral factor determining how much one can borrow"
@@ -30,8 +32,10 @@ interface MarketInfo {
   interestRateModelAddress: Bytes
   "Reserves stored in the contract"
   reserves: BigDecimal
+  "Supply interest rate for the current timestamp based on utilization rate"
+  supplyRatePerTimestamp: BigInt!
   "Yearly supply rate. With 2104400 blocks per year"
-  supplyRate: BigDecimal
+  supplyRateAPY: BigDecimal
   "Borrows in the market"
   totalBorrows: BigDecimal!
   "CToken supply. CTokens have 8 decimals"
@@ -65,8 +69,10 @@ type Market implements MarketInfo @entity {
   
   ### INTERFACE FIELDS
   #Fields that match compounds API
-  "Yearly borrow rate. With 2102400 blocks per year"
-  borrowRate: BigDecimal!
+  "Borrow interest rate for the current timestamp based on utilization rate"
+  borrowRatePerTimestamp: BigInt!
+  "Yearly borrow rate. With 31536000 seconds per year"
+  borrowRateAPY: BigDecimal!
   "The cToken contract balance of ERC20 or ETH"
   cash: BigDecimal!
   "Collateral factor determining how much one can borrow"
@@ -77,8 +83,10 @@ type Market implements MarketInfo @entity {
   interestRateModelAddress: Bytes
   "Reserves stored in the contract"
   reserves: BigDecimal
+  "Supply interest rate for the current timestamp based on utilization rate"
+  supplyRatePerTimestamp: BigInt!
   "Yearly supply rate. With 2104400 blocks per year"
-  supplyRate: BigDecimal
+  supplyRateAPY: BigDecimal
   "Borrows in the market"
   totalBorrows: BigDecimal!
   "CToken supply. CTokens have 8 decimals"
@@ -146,8 +154,10 @@ type MarketHourlySnapshot implements MarketInfo @entity {
 
   ### INTERFACE FIELDS
   #Fields that match compounds API
-  "Yearly borrow rate. With 2102400 blocks per year"
-  borrowRate: BigDecimal!
+  "Borrow interest rate for the current timestamp based on utilization rate"
+  borrowRatePerTimestamp: BigInt!
+  "Yearly borrow rate. With 31536000 seconds per year"
+  borrowRateAPY: BigDecimal!
   "The cToken contract balance of ERC20 or ETH"
   cash: BigDecimal!
   "Collateral factor determining how much one can borrow"
@@ -158,8 +168,10 @@ type MarketHourlySnapshot implements MarketInfo @entity {
   interestRateModelAddress: Bytes
   "Reserves stored in the contract"
   reserves: BigDecimal
+  "Supply interest rate for the current timestamp based on utilization rate"
+  supplyRatePerTimestamp: BigInt!
   "Yearly supply rate. With 2104400 blocks per year"
-  supplyRate: BigDecimal
+  supplyRateAPY: BigDecimal
   "Borrows in the market"
   totalBorrows: BigDecimal!
   "CToken supply. CTokens have 8 decimals"
@@ -201,8 +213,10 @@ type MarketDailySnapshot implements MarketInfo @entity {
 
   ### INTERFACE FIELDS
   #Fields that match compounds API
-  "Yearly borrow rate. With 2102400 blocks per year"
-  borrowRate: BigDecimal!
+  "Borrow interest rate for the current timestamp based on utilization rate"
+  borrowRatePerTimestamp: BigInt!
+  "Yearly borrow rate. With 31536000 seconds per year"
+  borrowRateAPY: BigDecimal!
   "The cToken contract balance of ERC20 or ETH"
   cash: BigDecimal!
   "Collateral factor determining how much one can borrow"
@@ -213,8 +227,10 @@ type MarketDailySnapshot implements MarketInfo @entity {
   interestRateModelAddress: Bytes
   "Reserves stored in the contract"
   reserves: BigDecimal
+  "Supply interest rate for the current timestamp based on utilization rate"
+  supplyRatePerTimestamp: BigInt!
   "Yearly supply rate. With 2104400 blocks per year"
-  supplyRate: BigDecimal
+  supplyRateAPY: BigDecimal
   "Borrows in the market"
   totalBorrows: BigDecimal!
   "CToken supply. CTokens have 8 decimals"

@@ -134,6 +134,15 @@ export class Market extends Entity {
     this.set("id", Value.fromString(value));
   }
 
+  get utilizationRate(): BigDecimal {
+    let value = this.get("utilizationRate");
+    return value!.toBigDecimal();
+  }
+
+  set utilizationRate(value: BigDecimal) {
+    this.set("utilizationRate", Value.fromBigDecimal(value));
+  }
+
   get borrowRatePerTimestamp(): BigInt {
     let value = this.get("borrowRatePerTimestamp");
     return value!.toBigInt();
@@ -505,6 +514,15 @@ export class MarketHourlySnapshot extends Entity {
     this.set("lastBlockHash", Value.fromBytes(value));
   }
 
+  get utilizationRate(): BigDecimal {
+    let value = this.get("utilizationRate");
+    return value!.toBigDecimal();
+  }
+
+  set utilizationRate(value: BigDecimal) {
+    this.set("utilizationRate", Value.fromBigDecimal(value));
+  }
+
   get borrowRatePerTimestamp(): BigInt {
     let value = this.get("borrowRatePerTimestamp");
     return value!.toBigInt();
@@ -776,6 +794,15 @@ export class MarketDailySnapshot extends Entity {
 
   set lastBlockHash(value: Bytes) {
     this.set("lastBlockHash", Value.fromBytes(value));
+  }
+
+  get utilizationRate(): BigDecimal {
+    let value = this.get("utilizationRate");
+    return value!.toBigDecimal();
+  }
+
+  set utilizationRate(value: BigDecimal) {
+    this.set("utilizationRate", Value.fromBigDecimal(value));
   }
 
   get borrowRatePerTimestamp(): BigInt {

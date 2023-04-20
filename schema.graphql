@@ -18,6 +18,8 @@ type Comptroller @entity {
 interface MarketInfo {
   
   #Fields that match compounds API
+  "The protocol utilization rate with 18 decimal places"
+  utilizationRate: BigDecimal!
   "Borrow interest rate for the current timestamp based on utilization rate"
   borrowRatePerTimestamp: BigInt!
   "Yearly borrow rate. With 31536000 seconds per year"
@@ -69,6 +71,8 @@ type Market implements MarketInfo @entity {
   
   ### INTERFACE FIELDS
   #Fields that match compounds API
+  "The protocol utilization rate with 18 decimal places"
+  utilizationRate: BigDecimal!
   "Borrow interest rate for the current timestamp based on utilization rate"
   borrowRatePerTimestamp: BigInt!
   "Yearly borrow rate. With 31536000 seconds per year"
@@ -154,6 +158,8 @@ type MarketHourlySnapshot implements MarketInfo @entity {
 
   ### INTERFACE FIELDS
   #Fields that match compounds API
+  "The protocol utilization rate with 18 decimal places"
+  utilizationRate: BigDecimal!
   "Borrow interest rate for the current timestamp based on utilization rate"
   borrowRatePerTimestamp: BigInt!
   "Yearly borrow rate. With 31536000 seconds per year"
@@ -213,6 +219,8 @@ type MarketDailySnapshot implements MarketInfo @entity {
 
   ### INTERFACE FIELDS
   #Fields that match compounds API
+  "The protocol utilization rate with 18 decimal places"
+  utilizationRate: BigDecimal!
   "Borrow interest rate for the current timestamp based on utilization rate"
   borrowRatePerTimestamp: BigInt!
   "Yearly borrow rate. With 31536000 seconds per year"

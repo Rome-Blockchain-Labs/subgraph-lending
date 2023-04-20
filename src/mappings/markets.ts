@@ -121,6 +121,7 @@ function getOrCreateMarket(id: string, token: Token | null): Market {
 
     market.underlyingPrice = zeroBD;
     market.underlyingPriceUSD = zeroBD;
+    market.utilizationRate = zeroBD;
     market.borrowRatePerTimestamp = zeroBI;
     market.borrowRateAPY = zeroBD;
     market.collateralFactor = zeroBD;
@@ -238,6 +239,16 @@ export function updateMarket(marketAddress: Address, blockNumber: BigInt, blockT
       .toBigDecimal()
       .div(exponentToBigDecimal(market.underlyingDecimals))
       .truncate(market.underlyingDecimals);
+
+    let rawTotalBorrows = contract.totalBorrows();
+    market.utilizationRate = rawTotalBorrows
+      .toBigDecimal()
+      .div(
+        contract.getCash()
+        .plus(rawTotalBorrows)
+        .minus(contract.totalReserves())
+        .toBigDecimal()
+      ).truncate(18);
 
     market.borrowRatePerTimestamp = contract.borrowRatePerTimestamp();
 

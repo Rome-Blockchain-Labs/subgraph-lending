@@ -244,14 +244,16 @@ export function updateMarket(marketAddress: Address, blockNumber: BigInt, blockT
       .truncate(market.underlyingDecimals);
 
     let rawTotalBorrows = contract.totalBorrows();
-    market.utilizationRate = rawTotalBorrows
-      .toBigDecimal()
-      .div(
-        contract.getCash()
-        .plus(rawTotalBorrows)
-        .minus(contract.totalReserves())
+    market.utilizationRate = !rawTotalBorrows.gt(zeroBI) ?
+      zeroBD 
+      : rawTotalBorrows
         .toBigDecimal()
-      ).truncate(18);
+        .div(
+          contract.getCash()
+          .plus(rawTotalBorrows)
+          .minus(contract.totalReserves())
+          .toBigDecimal()
+        ).truncate(18);
 
     market.borrowRatePerTimestamp = contract.borrowRatePerTimestamp();
 

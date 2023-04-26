@@ -243,6 +243,8 @@ export function handleRepayBorrow(event: RepayBorrow): void {
 
   let repayAmountBD = event.params.repayAmount.toBigDecimal().div(exponentToBigDecimal(market.underlyingDecimals));
 
+  let previousAccountBorrows = cTokenStats.storedBorrowBalance;
+
   let accountBorrows = event.params.accountBorrows
     .toBigDecimal()
     .div(exponentToBigDecimal(market.underlyingDecimals))
@@ -253,7 +255,7 @@ export function handleRepayBorrow(event: RepayBorrow): void {
   cTokenStats.totalUnderlyingRepaid = cTokenStats.totalUnderlyingRepaid.plus(repayAmountBD);
   cTokenStats.save();
 
-  if (cTokenStats.storedBorrowBalance.equals(zeroBD)) {
+  if (previousAccountBorrows.gt(zeroBD) && cTokenStats.storedBorrowBalance.equals(zeroBD)) {
     market.borrowersCount = market.borrowersCount - 1
     market.save()
     saveMarketSnapshots(market, event.block.timestamp, event.block.number, event.block.hash);

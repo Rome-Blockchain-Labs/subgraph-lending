@@ -449,6 +449,8 @@ export function handleTransfer(event: Transfer): void {
       event.block.number
     );
 
+    let previousBalance = cTokenStatsFrom.cTokenBalance;
+
     cTokenStatsFrom.cTokenBalance = cTokenStatsFrom.cTokenBalance.minus(
       event.params.amount
         .toBigDecimal()
@@ -463,7 +465,7 @@ export function handleTransfer(event: Transfer): void {
     // Only associate event with account if it's not the market account
     saveAccountCTokenEvent(market.id, accountFromID, transfer.id);
     
-    if (cTokenStatsFrom.cTokenBalance.equals(zeroBD)) {
+    if (previousBalance.gt(zeroBD) && cTokenStatsFrom.cTokenBalance.equals(zeroBD)) {
       market.suppliersCount = market.suppliersCount - 1
       market.save()
       shouldSaveMarketSnapshot = true;

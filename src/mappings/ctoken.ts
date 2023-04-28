@@ -454,10 +454,7 @@ export function handleTransfer(event: Transfer): void {
     let previousBalance = cTokenStatsFrom.cTokenBalance;
 
     cTokenStatsFrom.cTokenBalance = cTokenStatsFrom.cTokenBalance.minus(
-      event.params.amount
-        .toBigDecimal()
-        .div(cTokenDecimalsBD)
-        .truncate(cTokenDecimals)
+      amountCToken.truncate(cTokenDecimals)
     );
 
     cTokenStatsFrom.totalUnderlyingRedeemed = cTokenStatsFrom.totalUnderlyingRedeemed.plus(amountUnderlyingTruncated);
@@ -493,12 +490,9 @@ export function handleTransfer(event: Transfer): void {
       event.block.number,
     );
 
-    let previousCTokenBalanceTo = cTokenStatsTo.cTokenBalance
+    let previousCTokenBalanceTo = cTokenStatsTo.cTokenBalance;
     cTokenStatsTo.cTokenBalance = cTokenStatsTo.cTokenBalance.plus(
-      event.params.amount
-        .toBigDecimal()
-        .div(cTokenDecimalsBD)
-        .truncate(cTokenDecimals)
+      amountCToken.truncate(cTokenDecimals)
     );
 
     cTokenStatsTo.totalUnderlyingSupplied = cTokenStatsTo.totalUnderlyingSupplied.plus(amountUnderlyingTruncated);

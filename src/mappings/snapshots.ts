@@ -46,15 +46,10 @@ export function updateAccountMarketSnapshot(accountMarket: AccountCToken, market
   let id = accountMarket.id.concat('-').concat(blockNumber.toString());
 
   let snapshot = AccountMarketSnapshot.load(id);
-  let previousSupplyAmount = zeroBD;
-  let previousBorrowAmount = zeroBD;
 
   if (!snapshot) {
     snapshot = new AccountMarketSnapshot(id);
     snapshot.accountMarket = accountMarket.id;
-  } else {
-    previousBorrowAmount = snapshot.borrowBalanceWithInterest;
-    previousSupplyAmount = snapshot.totalSupplyAmount;
   }
 
   snapshot.blockNumber = blockNumber;

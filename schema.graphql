@@ -649,3 +649,118 @@ type Token @entity(immutable: true) {
   "Token's total supply"
   totalSupply: BigInt
 }
+type BreakGlassGuardianChanged @entity(immutable: true) {
+  id: Bytes!
+  oldValue: Bytes! # address
+  newValue: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type GovernanceReturnAddressChanged @entity(immutable: true) {
+  id: Bytes!
+  oldValue: Bytes! # address
+  newValue: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type ProposalCanceled @entity(immutable: true) {
+  id: Bytes!
+  GovernorBravo_id: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type ProposalCreated @entity(immutable: true) {
+  id: Bytes!
+  GovernorBravo_id: BigInt! # uint256
+  proposer: Bytes! # address
+  targets: [Bytes!]! # address[]
+  values: [BigInt!]! # uint256[]
+  signatures: [String!]! # string[]
+  calldatas: [Bytes!]! # bytes[]
+  startTimestamp: BigInt! # uint256
+  endTimestamp: BigInt! # uint256
+  description: String! # string
+  quorum: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type ProposalExecuted @entity(immutable: true) {
+  id: Bytes!
+  GovernorBravo_id: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type ProposalMaxOperationsChanged @entity(immutable: true) {
+  id: Bytes!
+  oldValue: BigInt! # uint256
+  newValue: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type ProposalQueued @entity(immutable: true) {
+  id: Bytes!
+  GovernorBravo_id: BigInt! # uint256
+  eta: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type ProposalThresholdChanged @entity(immutable: true) {
+  id: Bytes!
+  oldValue: BigInt! # uint256
+  newValue: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type QuorumVotesChanged @entity(immutable: true) {
+  id: Bytes!
+  oldValue: BigInt! # uint256
+  newValue: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type StartBlockSet @entity(immutable: true) {
+  id: Bytes!
+  proposalId: BigInt! # uint256
+  startBlock: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type VoteCast @entity(immutable: true) {
+  id: Bytes!
+  voter: Bytes! # address
+  proposalId: BigInt! # uint256
+  voteValue: Int! # uint8
+  votes: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type VotingDelayChanged @entity(immutable: true) {
+  id: Bytes!
+  oldValue: BigInt! # uint256
+  newValue: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}

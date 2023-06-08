@@ -4,7 +4,7 @@
   "scripts": {
     "codegen": "graph codegen --output-dir src/types/",
     "build": "graph build",
-    "deploy": "graph deploy --node https://api.thegraph.com/deploy/ cleivson/benqi-v1-avalanche-test",
+    "deploy": "graph deploy --node https://api.thegraph.com/deploy/ --network evmos cleivson/tashi-v1-avalanche-test",
     "deploy-studio": "graph deploy --node https://api.studio.thegraph.com/deploy/ benqi-v1-avalanche",
     "create-local": "graph create --node http://localhost:8020/ benqi-v1-avalanche",
     "remove-local": "graph remove --node http://localhost:8020/ benqi-v1-avalanche",
@@ -12,7 +12,8 @@
     "test": "graph test"
   },
   "dependencies": {
-    "@graphprotocol/graph-cli": "^0.28.1",
-    "@graphprotocol/graph-ts": "^0.26.0"
+    "@graphprotocol/graph-cli": "^0.51.0",
+    "@graphprotocol/graph-ts": "^0.31.0",
+    "source-map-support": "^0.5.21"
   }
 }

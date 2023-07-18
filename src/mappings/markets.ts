@@ -179,7 +179,7 @@ export function updateMarket(marketAddress: Address, blockNumber: BigInt, blockT
   }
 
   // Only updateMarket if it has not been updated this block
-  if (market.accrualBlockTimestamp != blockTimestamp) {
+  if (market.accrualBlockTimestamp !== blockTimestamp) {
     let contractAddress = Address.fromString(market.id);
     let contract = CToken.bind(contractAddress);
 

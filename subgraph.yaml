@@ -77,15 +77,12 @@ dataSources:
       entities:
         - BreakGlassGuardianChanged
         - GovernanceReturnAddressChanged
-        - ProposalCanceled
-        - ProposalCreated
-        - ProposalExecuted
+        - Proposal
+        - Vote
         - ProposalMaxOperationsChanged
-        - ProposalQueued
         - ProposalThresholdChanged
         - QuorumVotesChanged
         - StartBlockSet
-        - VoteCast
         - VotingDelayChanged
       abis:
         - name: GovernorBravo

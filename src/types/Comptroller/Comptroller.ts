@@ -559,6 +559,14 @@ export class Comptroller__compBorrowStateResult {
     map.set("value1", ethereum.Value.fromUnsignedBigInt(this.value1));
     return map;
   }
+
+  getIndex(): BigInt {
+    return this.value0;
+  }
+
+  getBlock(): BigInt {
+    return this.value1;
+  }
 }
 
 export class Comptroller__compSupplyStateResult {
@@ -575,6 +583,14 @@ export class Comptroller__compSupplyStateResult {
     map.set("value0", ethereum.Value.fromUnsignedBigInt(this.value0));
     map.set("value1", ethereum.Value.fromUnsignedBigInt(this.value1));
     return map;
+  }
+
+  getIndex(): BigInt {
+    return this.value0;
+  }
+
+  getBlock(): BigInt {
+    return this.value1;
   }
 }
 
@@ -596,6 +612,18 @@ export class Comptroller__getAccountLiquidityResult {
     map.set("value2", ethereum.Value.fromUnsignedBigInt(this.value2));
     return map;
   }
+
+  getValue0(): BigInt {
+    return this.value0;
+  }
+
+  getValue1(): BigInt {
+    return this.value1;
+  }
+
+  getValue2(): BigInt {
+    return this.value2;
+  }
 }
 
 export class Comptroller__getHypotheticalAccountLiquidityResult {
@@ -616,6 +644,18 @@ export class Comptroller__getHypotheticalAccountLiquidityResult {
     map.set("value2", ethereum.Value.fromUnsignedBigInt(this.value2));
     return map;
   }
+
+  getValue0(): BigInt {
+    return this.value0;
+  }
+
+  getValue1(): BigInt {
+    return this.value1;
+  }
+
+  getValue2(): BigInt {
+    return this.value2;
+  }
 }
 
 export class Comptroller__liquidateCalculateSeizeTokensResult {
@@ -632,6 +672,14 @@ export class Comptroller__liquidateCalculateSeizeTokensResult {
     map.set("value0", ethereum.Value.fromUnsignedBigInt(this.value0));
     map.set("value1", ethereum.Value.fromUnsignedBigInt(this.value1));
     return map;
+  }
+
+  getValue0(): BigInt {
+    return this.value0;
+  }
+
+  getValue1(): BigInt {
+    return this.value1;
   }
 }
 
@@ -652,6 +700,18 @@ export class Comptroller__marketsResult {
     map.set("value1", ethereum.Value.fromUnsignedBigInt(this.value1));
     map.set("value2", ethereum.Value.fromBoolean(this.value2));
     return map;
+  }
+
+  getIsListed(): boolean {
+    return this.value0;
+  }
+
+  getCollateralFactorMantissa(): BigInt {
+    return this.value1;
+  }
+
+  getIsComped(): boolean {
+    return this.value2;
   }
 }
 

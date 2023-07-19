@@ -332,6 +332,22 @@ export class GovernorBravo__getActionsResult {
     map.set("value3", ethereum.Value.fromBytesArray(this.value3));
     return map;
   }
+
+  getTargets(): Array<Address> {
+    return this.value0;
+  }
+
+  getValues(): Array<BigInt> {
+    return this.value1;
+  }
+
+  getSignatures(): Array<string> {
+    return this.value2;
+  }
+
+  getCalldatas(): Array<Bytes> {
+    return this.value3;
+  }
 }
 
 export class GovernorBravo__getReceiptResultValue0Struct extends ethereum.Tuple {
@@ -409,6 +425,58 @@ export class GovernorBravo__proposalsResult {
     map.set("value11", ethereum.Value.fromBoolean(this.value11));
     map.set("value12", ethereum.Value.fromUnsignedBigInt(this.value12));
     return map;
+  }
+
+  getId(): BigInt {
+    return this.value0;
+  }
+
+  getProposer(): Address {
+    return this.value1;
+  }
+
+  getEta(): BigInt {
+    return this.value2;
+  }
+
+  getStartTimestamp(): BigInt {
+    return this.value3;
+  }
+
+  getEndTimestamp(): BigInt {
+    return this.value4;
+  }
+
+  getStartBlock(): BigInt {
+    return this.value5;
+  }
+
+  getForVotes(): BigInt {
+    return this.value6;
+  }
+
+  getAgainstVotes(): BigInt {
+    return this.value7;
+  }
+
+  getAbstainVotes(): BigInt {
+    return this.value8;
+  }
+
+  getTotalVotes(): BigInt {
+    return this.value9;
+  }
+
+  getCanceled(): boolean {
+    return this.value10;
+  }
+
+  getExecuted(): boolean {
+    return this.value11;
+  }
+
+  getQuorum(): BigInt {
+    return this.value12;
   }
 }
 

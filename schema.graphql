@@ -694,6 +694,9 @@ type Proposal @entity {
   endTimestamp: BigInt! # uint256
   description: String! # string
   quorum: BigInt! # uint256
+  createdAtBlockNumber: BigInt!
+  createdAtBlockTimestamp: BigInt!
+  createdFromTransactionHash: Bytes!
   updatedAtBlockNumber: BigInt!
   updatedAtBlockTimestamp: BigInt!
   updatedFromTransactionHash: Bytes!

@@ -38,6 +38,8 @@ export function handleProposalCreated(event: ProposalCreatedEvent): void {
   let proposalID = event.params.id.toHex()
   let proposal = new Proposal(proposalID)
 
+  let governor = getOrCreateGovernor();
+
   proposal.proposer = event.params.proposer
   proposal.targets = event.params.targets.map<Bytes>(t => t as Bytes)
   proposal.values = event.params.values
@@ -47,10 +49,14 @@ export function handleProposalCreated(event: ProposalCreatedEvent): void {
   proposal.endTimestamp = event.params.endTimestamp
   proposal.description = event.params.description
   proposal.quorum = event.params.quorum
+  proposal.createdAtBlockNumber = event.block.number
+  proposal.createdAtBlockTimestamp = event.block.timestamp
+  proposal.createdFromTransactionHash = event.transaction.hash
   proposal.updatedAtBlockNumber = event.block.number
   proposal.updatedAtBlockTimestamp = event.block.timestamp
   proposal.updatedFromTransactionHash = event.transaction.hash
   proposal.state = "Active"
+  proposal.governor = governor.id
 
   proposal.save()
 }

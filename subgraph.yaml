@@ -3,10 +3,6 @@ description: Benqi is an open-source protocol for algorithmic, efficient Money M
 repository: https://github.com/Rome-Blockchain-Labs/subgraph-lending
 schema:
   file: ./schema.graphql
-graft:
-  # Those values below should be adjusted on every deploy to make a faster deployment by copying the most recent data from the current subgraph
-  base: QmaPiB9oke92a8VJPxJPnEMTMdoSZZGzu8n5j3yU8GUwcD # Subgraph ID of the lastet subgraph
-  block: 29543754 # Block number
 features:
   - grafting
 dataSources:

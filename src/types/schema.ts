@@ -3661,6 +3661,45 @@ export class Proposal extends Entity {
     this.set("quorum", Value.fromBigInt(value));
   }
 
+  get createdAtBlockNumber(): BigInt {
+    let value = this.get("createdAtBlockNumber");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toBigInt();
+    }
+  }
+
+  set createdAtBlockNumber(value: BigInt) {
+    this.set("createdAtBlockNumber", Value.fromBigInt(value));
+  }
+
+  get createdAtBlockTimestamp(): BigInt {
+    let value = this.get("createdAtBlockTimestamp");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toBigInt();
+    }
+  }
+
+  set createdAtBlockTimestamp(value: BigInt) {
+    this.set("createdAtBlockTimestamp", Value.fromBigInt(value));
+  }
+
+  get createdFromTransactionHash(): Bytes {
+    let value = this.get("createdFromTransactionHash");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toBytes();
+    }
+  }
+
+  set createdFromTransactionHash(value: Bytes) {
+    this.set("createdFromTransactionHash", Value.fromBytes(value));
+  }
+
   get updatedAtBlockNumber(): BigInt {
     let value = this.get("updatedAtBlockNumber");
     if (!value || value.kind == ValueKind.NULL) {

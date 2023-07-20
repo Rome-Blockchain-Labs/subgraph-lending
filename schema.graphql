@@ -703,7 +703,7 @@ type Proposal @entity {
   votes: [Vote!]! @derivedFrom(field: "proposal")
   governor: Governor!
   state: ProposalState!
-  startBlock: BigInt!
+  startBlock: BigInt
   executionTransaction: Bytes # address
 }
 

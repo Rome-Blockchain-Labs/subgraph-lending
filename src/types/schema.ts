@@ -3769,17 +3769,21 @@ export class Proposal extends Entity {
     this.set("state", Value.fromString(value));
   }
 
-  get startBlock(): BigInt {
+  get startBlock(): BigInt | null {
     let value = this.get("startBlock");
     if (!value || value.kind == ValueKind.NULL) {
-      throw new Error("Cannot return null for a required field.");
+      return null;
     } else {
       return value.toBigInt();
     }
   }
 
-  set startBlock(value: BigInt) {
-    this.set("startBlock", Value.fromBigInt(value));
+  set startBlock(value: BigInt | null) {
+    if (!value) {
+      this.unset("startBlock");
+    } else {
+      this.set("startBlock", Value.fromBigInt(<BigInt>value));
+    }
   }
 
   get executionTransaction(): Bytes | null {

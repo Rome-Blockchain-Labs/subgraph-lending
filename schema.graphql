@@ -657,7 +657,7 @@ type Governor @entity {
   governanceReturnAddress: Bytes! # address
   proposalMaxOperations: BigInt!
   proposalThreshold: BigInt!
-  quorumVotes: BigInt!
+  currentQuorum: BigInt!
   votingDelay: BigInt!
   proposals: [Proposal!]! @derivedFrom(field: "governor")
   updatedAtBlockNumber: BigInt!
@@ -686,10 +686,11 @@ type Proposal @entity {
   id: ID!
   proposalId: BigInt
   proposer: Bytes! # address
-  targets: [Bytes!]! # address[]
-  values: [BigInt!]! # uint256[]
-  signatures: [String!]! # string[]
-  calldatas: [Bytes!]! # bytes[]
+  actionTargets: [Bytes!]! # address[]
+  actionValues: [BigInt!]! # uint256[]
+  actionSignatures: [String!]! # string[]
+  actionCalldatas: [Bytes!]! # bytes[]
+  actionTitles: [String!]! # String[]
   startTimestamp: BigInt! # uint256
   endTimestamp: BigInt! # uint256
   description: String! # string

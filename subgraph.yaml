@@ -100,8 +100,6 @@ dataSources:
           handler: handleProposalQueued
         - event: ProposalThresholdChanged(uint256,uint256)
           handler: handleProposalThresholdChanged
-        - event: QuorumVotesChanged(uint256,uint256)
-          handler: handleQuorumVotesChanged
         - event: StartBlockSet(uint256,uint256)
           handler: handleStartBlockSet
         - event: VoteCast(address,uint256,uint8,uint256)

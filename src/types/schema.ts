@@ -3414,8 +3414,8 @@ export class Governor extends Entity {
     this.set("proposalThreshold", Value.fromBigInt(value));
   }
 
-  get quorumVotes(): BigInt {
-    let value = this.get("quorumVotes");
+  get currentQuorum(): BigInt {
+    let value = this.get("currentQuorum");
     if (!value || value.kind == ValueKind.NULL) {
       throw new Error("Cannot return null for a required field.");
     } else {
@@ -3423,8 +3423,8 @@ export class Governor extends Entity {
     }
   }
 
-  set quorumVotes(value: BigInt) {
-    this.set("quorumVotes", Value.fromBigInt(value));
+  set currentQuorum(value: BigInt) {
+    this.set("currentQuorum", Value.fromBigInt(value));
   }
 
   get votingDelay(): BigInt {
@@ -3557,8 +3557,8 @@ export class Proposal extends Entity {
     this.set("proposer", Value.fromBytes(value));
   }
 
-  get targets(): Array<Bytes> {
-    let value = this.get("targets");
+  get actionTargets(): Array<Bytes> {
+    let value = this.get("actionTargets");
     if (!value || value.kind == ValueKind.NULL) {
       throw new Error("Cannot return null for a required field.");
     } else {
@@ -3566,12 +3566,12 @@ export class Proposal extends Entity {
     }
   }
 
-  set targets(value: Array<Bytes>) {
-    this.set("targets", Value.fromBytesArray(value));
+  set actionTargets(value: Array<Bytes>) {
+    this.set("actionTargets", Value.fromBytesArray(value));
   }
 
-  get values(): Array<BigInt> {
-    let value = this.get("values");
+  get actionValues(): Array<BigInt> {
+    let value = this.get("actionValues");
     if (!value || value.kind == ValueKind.NULL) {
       throw new Error("Cannot return null for a required field.");
     } else {
@@ -3579,12 +3579,12 @@ export class Proposal extends Entity {
     }
   }
 
-  set values(value: Array<BigInt>) {
-    this.set("values", Value.fromBigIntArray(value));
+  set actionValues(value: Array<BigInt>) {
+    this.set("actionValues", Value.fromBigIntArray(value));
   }
 
-  get signatures(): Array<string> {
-    let value = this.get("signatures");
+  get actionSignatures(): Array<string> {
+    let value = this.get("actionSignatures");
     if (!value || value.kind == ValueKind.NULL) {
       throw new Error("Cannot return null for a required field.");
     } else {
@@ -3592,12 +3592,12 @@ export class Proposal extends Entity {
     }
   }
 
-  set signatures(value: Array<string>) {
-    this.set("signatures", Value.fromStringArray(value));
+  set actionSignatures(value: Array<string>) {
+    this.set("actionSignatures", Value.fromStringArray(value));
   }
 
-  get calldatas(): Array<Bytes> {
-    let value = this.get("calldatas");
+  get actionCalldatas(): Array<Bytes> {
+    let value = this.get("actionCalldatas");
     if (!value || value.kind == ValueKind.NULL) {
       throw new Error("Cannot return null for a required field.");
     } else {
@@ -3605,8 +3605,21 @@ export class Proposal extends Entity {
     }
   }
 
-  set calldatas(value: Array<Bytes>) {
-    this.set("calldatas", Value.fromBytesArray(value));
+  set actionCalldatas(value: Array<Bytes>) {
+    this.set("actionCalldatas", Value.fromBytesArray(value));
+  }
+
+  get actionTitles(): Array<string> {
+    let value = this.get("actionTitles");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toStringArray();
+    }
+  }
+
+  set actionTitles(value: Array<string>) {
+    this.set("actionTitles", Value.fromStringArray(value));
   }
 
   get startTimestamp(): BigInt {

@@ -1,4 +1,4 @@
-import { Address, Bytes } from "@graphprotocol/graph-ts"
+import { Address, BigInt, Bytes, ethereum } from "@graphprotocol/graph-ts"
 import {
   BreakGlassGuardianChanged as BreakGlassGuardianChangedEvent,
   GovernanceReturnAddressChanged as GovernanceReturnAddressChangedEvent,
@@ -9,7 +9,6 @@ import {
   ProposalMaxOperationsChanged as ProposalMaxOperationsChangedEvent,
   ProposalQueued as ProposalQueuedEvent,
   ProposalThresholdChanged as ProposalThresholdChangedEvent,
-  QuorumVotesChanged as QuorumVotesChangedEvent,
   StartBlockSet as StartBlockSetEvent,
   VoteCast as VoteCastEvent,
   VotingDelayChanged as VotingDelayChangedEvent
@@ -38,13 +37,14 @@ export function handleProposalCreated(event: ProposalCreatedEvent): void {
   let proposalID = event.params.id.toHex()
   let proposal = new Proposal(proposalID)
 
-  let governor = getOrCreateGovernor();
+  let governor = getOrCreateGovernor()
 
   proposal.proposer = event.params.proposer
-  proposal.targets = event.params.targets.map<Bytes>(t => t as Bytes)
-  proposal.values = event.params.values
-  proposal.signatures = event.params.signatures
-  proposal.calldatas = event.params.calldatas
+  proposal.actionTargets = event.params.targets.map<Bytes>(t => t as Bytes)
+  proposal.actionValues = event.params.values
+  proposal.actionSignatures = event.params.signatures
+  proposal.actionCalldatas = event.params.calldatas
+  proposal.actionTitles = mapActionTitles(proposal.actionTargets, proposal.actionValues, proposal.actionSignatures, proposal.actionCalldatas)
   proposal.startTimestamp = event.params.startTimestamp
   proposal.endTimestamp = event.params.endTimestamp
   proposal.description = event.params.description
@@ -166,18 +166,6 @@ export function handleProposalThresholdChanged(
   governor.save()
 }
 
-export function handleQuorumVotesChanged(event: QuorumVotesChangedEvent): void {
-  const governor = getOrCreateGovernor()
-
-  governor.quorumVotes = event.params.newValue
-
-  governor.updatedAtBlockNumber = event.block.number
-  governor.updatedAtBlockTimestamp = event.block.timestamp
-  governor.updatedFromTransactionHash = event.transaction.hash
-
-  governor.save()
-}
-
 export function handleVotingDelayChanged(event: VotingDelayChangedEvent): void {
   const governor = getOrCreateGovernor()
 
@@ -225,14 +213,62 @@ export function getOrCreateGovernor(): Governor {
     governor = new Governor("1")
     governor.address = Address.fromString(GOVERNOR_BRAVO_ADDRESS)
 
-    let governorContract = GovernorBravo.bind(Address.fromString(GOVERNOR_BRAVO_ADDRESS));
-
+    let governorContract = GovernorBravo.bind(Address.fromString(GOVERNOR_BRAVO_ADDRESS))
     governor.breakGlassGuardian = governorContract.breakGlassGuardian()
     governor.governanceReturnAddress = governorContract.governanceReturnAddress()
     governor.proposalThreshold = governorContract.proposalThreshold()
     governor.proposalMaxOperations = governorContract.proposalMaxOperations()
-    governor.quorumVotes = governorContract.quorumVotes()
+    governor.currentQuorum = governorContract.currentQuorum()
     governor.votingDelay = governorContract.votingDelay()
   }
   return governor
+}
+function mapActionTitles(targets: Bytes[], values: BigInt[], signatures: string[], calldatas: Bytes[]): string[] {
+  const titles: string[] = []
+
+  for (let i = 0; i < targets.length; i++) {
+    // calldata only contains the parameters tuple, not the function name
+    // so here we split the function name and the tuple signature
+    const functionName = signatures[i].slice(0, signatures[i].indexOf("("))
+    const tupleSignature = signatures[i].slice(signatures[i].indexOf("("))
+
+    const decoded = ethereum.decode(tupleSignature, calldatas[i])
+
+    if (decoded) {
+      titles.push(`${targets[i]}.${functionName}${stringifyValue(decoded)}`)
+    }
+    else {
+      titles.push(`${targets[i]}.${functionName}()`)
+    }
+  }
+
+  return titles
+}
+
+function stringifyValue(value: ethereum.Value): string {
+  switch (value.kind) {
+    case ethereum.ValueKind.ADDRESS:
+      return value.toAddress().toHexString()
+    case ethereum.ValueKind.FIXED_BYTES:
+    case ethereum.ValueKind.BYTES:
+      return value.toBytes().toHexString()
+    case ethereum.ValueKind.INT:
+    case ethereum.ValueKind.UINT:
+      return `"${value.toI32().toString()}"`
+    case ethereum.ValueKind.BOOL:
+      return value.toBoolean().toString()
+    case ethereum.ValueKind.STRING:
+      return value.toString()
+    case ethereum.ValueKind.FIXED_ARRAY:
+    case ethereum.ValueKind.ARRAY:
+      return "["
+        + value.toArray().map<string>((v: ethereum.Value) => stringifyValue(v)).join(", ")
+        + "]"
+    case ethereum.ValueKind.TUPLE:
+      return "("
+        + value.toTuple().map<string>((v: ethereum.Value) => stringifyValue(v)).join(", ")
+        + ")"
+    default:
+      return ""
+  }
 }

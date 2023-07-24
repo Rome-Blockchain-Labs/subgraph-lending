@@ -38,12 +38,7 @@
       },
       {
         "internalType": "uint256",
-        "name": "guardianSunset_",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "currentQuorum_",
+        "name": "quorumVotes_",
         "type": "uint256"
       },
       {
@@ -91,25 +86,6 @@
       }
     ],
     "name": "GovernanceReturnAddressChanged",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "oldValue",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "newValue",
-        "type": "uint256"
-      }
-    ],
-    "name": "LowerQuorumCapChanged",
     "type": "event"
   },
   {
@@ -278,7 +254,7 @@
         "type": "uint256"
       }
     ],
-    "name": "QuroumVotesChanged",
+    "name": "QuorumVotesChanged",
     "type": "event"
   },
   {
@@ -298,25 +274,6 @@
       }
     ],
     "name": "StartBlockSet",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "oldValue",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "newValue",
-        "type": "uint256"
-      }
-    ],
-    "name": "UpperQuorumCapChanged",
     "type": "event"
   },
   {
@@ -431,38 +388,12 @@
   {
     "inputs": [
       {
-        "internalType": "contract ChangeAdminInterface[]",
-        "name": "addresses",
-        "type": "address[]"
-      }
-    ],
-    "name": "__executeBreakGlassOnChangeAdmin",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "contract CompoundSetPendingAdminInterface[]",
         "name": "addresses",
         "type": "address[]"
       }
     ],
     "name": "__executeBreakGlassOnCompound",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "contract SetEmissionsManagerInterface[]",
-        "name": "addresses",
-        "type": "address[]"
-      }
-    ],
-    "name": "__executeBreakGlassOnEmissionsManager",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -614,19 +545,6 @@
     "name": "castVoteBySig",
     "outputs": [],
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "currentQuorum",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -1074,6 +992,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "quorumVotes",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -1153,6 +1084,19 @@
       }
     ],
     "name": "setProposalThreshold",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "newValue",
+        "type": "uint256"
+      }
+    ],
+    "name": "setQuorumVotes",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

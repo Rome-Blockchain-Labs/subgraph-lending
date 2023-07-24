@@ -657,7 +657,7 @@ type Governor @entity {
   governanceReturnAddress: Bytes! # address
   proposalMaxOperations: BigInt!
   proposalThreshold: BigInt!
-  currentQuorum: BigInt!
+  quorumVotes: BigInt!
   votingDelay: BigInt!
   proposals: [Proposal!]! @derivedFrom(field: "governor")
   updatedAtBlockNumber: BigInt!
@@ -684,7 +684,6 @@ enum ProposalState {
 
 type Proposal @entity {
   id: ID!
-  proposalId: BigInt
   proposer: Bytes! # address
   actionTargets: [Bytes!]! # address[]
   actionValues: [BigInt!]! # uint256[]
@@ -702,10 +701,20 @@ type Proposal @entity {
   updatedAtBlockTimestamp: BigInt!
   updatedFromTransactionHash: Bytes!
   votes: [Vote!]! @derivedFrom(field: "proposal")
+  proposalStateChanges: [ProposalStateChange!]! @derivedFrom(field: "proposal")
   governor: Governor!
   state: ProposalState!
   startBlock: BigInt
-  executionTransaction: Bytes # address
+  eta: BigInt
+}
+
+type ProposalStateChange @entity {
+  id: ID!
+  proposal: Proposal!
+  newState: ProposalState!
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
 }
 
 type Vote @entity {

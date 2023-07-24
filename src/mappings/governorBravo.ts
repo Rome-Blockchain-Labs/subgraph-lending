@@ -2,6 +2,7 @@ import { Address, BigInt, Bytes, ethereum } from "@graphprotocol/graph-ts"
 import {
   BreakGlassGuardianChanged as BreakGlassGuardianChangedEvent,
   GovernanceReturnAddressChanged as GovernanceReturnAddressChangedEvent,
+  QuorumVotesChanged as QuorumVotesChangedEvent,
   GovernorBravo,
   ProposalCanceled as ProposalCanceledEvent,
   ProposalCreated as ProposalCreatedEvent,
@@ -16,6 +17,7 @@ import {
 import {
   Governor,
   Proposal,
+  ProposalStateChange,
   Vote,
 } from "../types/schema"
 import { GOVERNOR_BRAVO_ADDRESS } from "./constants"
@@ -59,6 +61,8 @@ export function handleProposalCreated(event: ProposalCreatedEvent): void {
   proposal.governor = governor.id
 
   proposal.save()
+
+  createProposalStateChange(proposalID, proposal.state, event)
 }
 
 export function handleProposalCanceled(event: ProposalCanceledEvent): void {
@@ -72,6 +76,8 @@ export function handleProposalCanceled(event: ProposalCanceledEvent): void {
     proposal.updatedFromTransactionHash = event.transaction.hash
 
     proposal.save()
+
+    createProposalStateChange(proposalID, proposal.state, event)
   }
 }
 
@@ -80,13 +86,14 @@ export function handleProposalExecuted(event: ProposalExecutedEvent): void {
   let proposal = Proposal.load(proposalID)
   if (proposal != null) {
     proposal.state = "Executed"
-    proposal.executionTransaction = event.transaction.hash
 
     proposal.updatedAtBlockNumber = event.block.number
     proposal.updatedAtBlockTimestamp = event.block.timestamp
     proposal.updatedFromTransactionHash = event.transaction.hash
 
     proposal.save()
+
+    createProposalStateChange(proposalID, proposal.state, event)
   }
 }
 
@@ -95,12 +102,15 @@ export function handleProposalQueued(event: ProposalQueuedEvent): void {
   let proposal = Proposal.load(proposalID)
   if (proposal != null) {
     proposal.state = "Queued"
+    proposal.eta = event.params.eta
 
     proposal.updatedAtBlockNumber = event.block.number
     proposal.updatedAtBlockTimestamp = event.block.timestamp
     proposal.updatedFromTransactionHash = event.transaction.hash
 
     proposal.save()
+
+    createProposalStateChange(proposalID, proposal.state, event)
   }
 }
 
@@ -116,7 +126,25 @@ export function handleStartBlockSet(event: StartBlockSetEvent): void {
     proposal.updatedFromTransactionHash = event.transaction.hash
 
     proposal.save()
+
+    createProposalStateChange(proposalID, proposal.state, event)
   }
+}
+
+function createProposalStateChange(proposalID: string, newState: string, event: ethereum.Event): void {
+  let stateChangeID = proposalID + "-" + newState
+  let stateChange = ProposalStateChange.load(stateChangeID)
+  if (stateChange == null) {
+    stateChange = new ProposalStateChange(stateChangeID)
+  }
+
+  stateChange.newState = newState
+  stateChange.proposal = proposalID
+  stateChange.blockNumber = event.block.number
+  stateChange.blockTimestamp = event.block.timestamp
+  stateChange.transactionHash = event.transaction.hash
+
+  stateChange.save()
 }
 
 export function handleVoteCast(event: VoteCastEvent): void {
@@ -207,6 +235,20 @@ export function handleGovernanceReturnAddressChanged(
 
 }
 
+export function handleQuorumVotesChanged(
+  event: QuorumVotesChangedEvent
+): void {
+  const governor = getOrCreateGovernor()
+
+  governor.quorumVotes = event.params.newValue
+
+  governor.updatedAtBlockNumber = event.block.number
+  governor.updatedAtBlockTimestamp = event.block.timestamp
+  governor.updatedFromTransactionHash = event.transaction.hash
+
+  governor.save()
+}
+
 export function getOrCreateGovernor(): Governor {
   let governor = Governor.load("1")
   if (governor == null) {
@@ -218,7 +260,7 @@ export function getOrCreateGovernor(): Governor {
     governor.governanceReturnAddress = governorContract.governanceReturnAddress()
     governor.proposalThreshold = governorContract.proposalThreshold()
     governor.proposalMaxOperations = governorContract.proposalMaxOperations()
-    governor.currentQuorum = governorContract.currentQuorum()
+    governor.quorumVotes = governorContract.quorumVotes()
     governor.votingDelay = governorContract.votingDelay()
   }
   return governor
@@ -235,10 +277,10 @@ function mapActionTitles(targets: Bytes[], values: BigInt[], signatures: string[
     const decoded = ethereum.decode(tupleSignature, calldatas[i])
 
     if (decoded) {
-      titles.push(`${targets[i]}.${functionName}${stringifyValue(decoded)}`)
+      titles.push(`${targets[i].toHexString()}.${functionName}${stringifyValue(decoded)}`)
     }
     else {
-      titles.push(`${targets[i]}.${functionName}()`)
+      titles.push(`${targets[i].toHexString()}.${functionName}()`)
     }
   }
 
@@ -254,11 +296,11 @@ function stringifyValue(value: ethereum.Value): string {
       return value.toBytes().toHexString()
     case ethereum.ValueKind.INT:
     case ethereum.ValueKind.UINT:
-      return `"${value.toI32().toString()}"`
+      return value.toI32().toString()
     case ethereum.ValueKind.BOOL:
       return value.toBoolean().toString()
     case ethereum.ValueKind.STRING:
-      return value.toString()
+      return `"${value.toString()}"`
     case ethereum.ValueKind.FIXED_ARRAY:
     case ethereum.ValueKind.ARRAY:
       return "["

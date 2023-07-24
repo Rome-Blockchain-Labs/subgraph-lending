@@ -54,28 +54,6 @@ export class GovernanceReturnAddressChanged__Params {
   }
 }
 
-export class LowerQuorumCapChanged extends ethereum.Event {
-  get params(): LowerQuorumCapChanged__Params {
-    return new LowerQuorumCapChanged__Params(this);
-  }
-}
-
-export class LowerQuorumCapChanged__Params {
-  _event: LowerQuorumCapChanged;
-
-  constructor(event: LowerQuorumCapChanged) {
-    this._event = event;
-  }
-
-  get oldValue(): BigInt {
-    return this._event.parameters[0].value.toBigInt();
-  }
-
-  get newValue(): BigInt {
-    return this._event.parameters[1].value.toBigInt();
-  }
-}
-
 export class ProposalCanceled extends ethereum.Event {
   get params(): ProposalCanceled__Params {
     return new ProposalCanceled__Params(this);
@@ -232,16 +210,16 @@ export class ProposalThresholdChanged__Params {
   }
 }
 
-export class QuroumVotesChanged extends ethereum.Event {
-  get params(): QuroumVotesChanged__Params {
-    return new QuroumVotesChanged__Params(this);
+export class QuorumVotesChanged extends ethereum.Event {
+  get params(): QuorumVotesChanged__Params {
+    return new QuorumVotesChanged__Params(this);
   }
 }
 
-export class QuroumVotesChanged__Params {
-  _event: QuroumVotesChanged;
+export class QuorumVotesChanged__Params {
+  _event: QuorumVotesChanged;
 
-  constructor(event: QuroumVotesChanged) {
+  constructor(event: QuorumVotesChanged) {
     this._event = event;
   }
 
@@ -272,28 +250,6 @@ export class StartBlockSet__Params {
   }
 
   get startBlock(): BigInt {
-    return this._event.parameters[1].value.toBigInt();
-  }
-}
-
-export class UpperQuorumCapChanged extends ethereum.Event {
-  get params(): UpperQuorumCapChanged__Params {
-    return new UpperQuorumCapChanged__Params(this);
-  }
-}
-
-export class UpperQuorumCapChanged__Params {
-  _event: UpperQuorumCapChanged;
-
-  constructor(event: UpperQuorumCapChanged) {
-    this._event = event;
-  }
-
-  get oldValue(): BigInt {
-    return this._event.parameters[0].value.toBigInt();
-  }
-
-  get newValue(): BigInt {
     return this._event.parameters[1].value.toBigInt();
   }
 }
@@ -596,25 +552,6 @@ export class GovernorBravo extends ethereum.SmartContract {
     }
     let value = result.value;
     return ethereum.CallResult.fromValue(value[0].toAddress());
-  }
-
-  currentQuorum(): BigInt {
-    let result = super.call("currentQuorum", "currentQuorum():(uint256)", []);
-
-    return result[0].toBigInt();
-  }
-
-  try_currentQuorum(): ethereum.CallResult<BigInt> {
-    let result = super.tryCall(
-      "currentQuorum",
-      "currentQuorum():(uint256)",
-      []
-    );
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
   fastTrackFunctionSignatureWhitelist(param0: string): boolean {
@@ -1135,6 +1072,21 @@ export class GovernorBravo extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
+  quorumVotes(): BigInt {
+    let result = super.call("quorumVotes", "quorumVotes():(uint256)", []);
+
+    return result[0].toBigInt();
+  }
+
+  try_quorumVotes(): ethereum.CallResult<BigInt> {
+    let result = super.tryCall("quorumVotes", "quorumVotes():(uint256)", []);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigInt());
+  }
+
   revenueProposalList(param0: Address): boolean {
     let result = super.call(
       "revenueProposalList",
@@ -1371,16 +1323,12 @@ export class ConstructorCall__Inputs {
     return this._call.inputValues[6].value.toAddress();
   }
 
-  get guardianSunset_(): BigInt {
+  get quorumVotes_(): BigInt {
     return this._call.inputValues[7].value.toBigInt();
   }
 
-  get currentQuorum_(): BigInt {
-    return this._call.inputValues[8].value.toBigInt();
-  }
-
   get proposalThreshold_(): BigInt {
-    return this._call.inputValues[9].value.toBigInt();
+    return this._call.inputValues[8].value.toBigInt();
   }
 }
 
@@ -1478,36 +1426,6 @@ export class __executeAcceptAdminOnContractCall__Outputs {
   }
 }
 
-export class __executeBreakGlassOnChangeAdminCall extends ethereum.Call {
-  get inputs(): __executeBreakGlassOnChangeAdminCall__Inputs {
-    return new __executeBreakGlassOnChangeAdminCall__Inputs(this);
-  }
-
-  get outputs(): __executeBreakGlassOnChangeAdminCall__Outputs {
-    return new __executeBreakGlassOnChangeAdminCall__Outputs(this);
-  }
-}
-
-export class __executeBreakGlassOnChangeAdminCall__Inputs {
-  _call: __executeBreakGlassOnChangeAdminCall;
-
-  constructor(call: __executeBreakGlassOnChangeAdminCall) {
-    this._call = call;
-  }
-
-  get addresses(): Array<Address> {
-    return this._call.inputValues[0].value.toAddressArray();
-  }
-}
-
-export class __executeBreakGlassOnChangeAdminCall__Outputs {
-  _call: __executeBreakGlassOnChangeAdminCall;
-
-  constructor(call: __executeBreakGlassOnChangeAdminCall) {
-    this._call = call;
-  }
-}
-
 export class __executeBreakGlassOnCompoundCall extends ethereum.Call {
   get inputs(): __executeBreakGlassOnCompoundCall__Inputs {
     return new __executeBreakGlassOnCompoundCall__Inputs(this);
@@ -1534,36 +1452,6 @@ export class __executeBreakGlassOnCompoundCall__Outputs {
   _call: __executeBreakGlassOnCompoundCall;
 
   constructor(call: __executeBreakGlassOnCompoundCall) {
-    this._call = call;
-  }
-}
-
-export class __executeBreakGlassOnEmissionsManagerCall extends ethereum.Call {
-  get inputs(): __executeBreakGlassOnEmissionsManagerCall__Inputs {
-    return new __executeBreakGlassOnEmissionsManagerCall__Inputs(this);
-  }
-
-  get outputs(): __executeBreakGlassOnEmissionsManagerCall__Outputs {
-    return new __executeBreakGlassOnEmissionsManagerCall__Outputs(this);
-  }
-}
-
-export class __executeBreakGlassOnEmissionsManagerCall__Inputs {
-  _call: __executeBreakGlassOnEmissionsManagerCall;
-
-  constructor(call: __executeBreakGlassOnEmissionsManagerCall) {
-    this._call = call;
-  }
-
-  get addresses(): Array<Address> {
-    return this._call.inputValues[0].value.toAddressArray();
-  }
-}
-
-export class __executeBreakGlassOnEmissionsManagerCall__Outputs {
-  _call: __executeBreakGlassOnEmissionsManagerCall;
-
-  constructor(call: __executeBreakGlassOnEmissionsManagerCall) {
     this._call = call;
   }
 }
@@ -2054,6 +1942,36 @@ export class SetProposalThresholdCall__Outputs {
   _call: SetProposalThresholdCall;
 
   constructor(call: SetProposalThresholdCall) {
+    this._call = call;
+  }
+}
+
+export class SetQuorumVotesCall extends ethereum.Call {
+  get inputs(): SetQuorumVotesCall__Inputs {
+    return new SetQuorumVotesCall__Inputs(this);
+  }
+
+  get outputs(): SetQuorumVotesCall__Outputs {
+    return new SetQuorumVotesCall__Outputs(this);
+  }
+}
+
+export class SetQuorumVotesCall__Inputs {
+  _call: SetQuorumVotesCall;
+
+  constructor(call: SetQuorumVotesCall) {
+    this._call = call;
+  }
+
+  get newValue(): BigInt {
+    return this._call.inputValues[0].value.toBigInt();
+  }
+}
+
+export class SetQuorumVotesCall__Outputs {
+  _call: SetQuorumVotesCall;
+
+  constructor(call: SetQuorumVotesCall) {
     this._call = call;
   }
 }

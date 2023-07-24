@@ -3414,8 +3414,8 @@ export class Governor extends Entity {
     this.set("proposalThreshold", Value.fromBigInt(value));
   }
 
-  get currentQuorum(): BigInt {
-    let value = this.get("currentQuorum");
+  get quorumVotes(): BigInt {
+    let value = this.get("quorumVotes");
     if (!value || value.kind == ValueKind.NULL) {
       throw new Error("Cannot return null for a required field.");
     } else {
@@ -3423,8 +3423,8 @@ export class Governor extends Entity {
     }
   }
 
-  set currentQuorum(value: BigInt) {
-    this.set("currentQuorum", Value.fromBigInt(value));
+  set quorumVotes(value: BigInt) {
+    this.set("quorumVotes", Value.fromBigInt(value));
   }
 
   get votingDelay(): BigInt {
@@ -3525,23 +3525,6 @@ export class Proposal extends Entity {
 
   set id(value: string) {
     this.set("id", Value.fromString(value));
-  }
-
-  get proposalId(): BigInt | null {
-    let value = this.get("proposalId");
-    if (!value || value.kind == ValueKind.NULL) {
-      return null;
-    } else {
-      return value.toBigInt();
-    }
-  }
-
-  set proposalId(value: BigInt | null) {
-    if (!value) {
-      this.unset("proposalId");
-    } else {
-      this.set("proposalId", Value.fromBigInt(<BigInt>value));
-    }
   }
 
   get proposer(): Bytes {
@@ -3756,6 +3739,14 @@ export class Proposal extends Entity {
     return new VoteLoader("Proposal", this.get("id")!.toString(), "votes");
   }
 
+  get proposalStateChanges(): ProposalStateChangeLoader {
+    return new ProposalStateChangeLoader(
+      "Proposal",
+      this.get("id")!.toString(),
+      "proposalStateChanges"
+    );
+  }
+
   get governor(): string {
     let value = this.get("governor");
     if (!value || value.kind == ValueKind.NULL) {
@@ -3799,21 +3790,130 @@ export class Proposal extends Entity {
     }
   }
 
-  get executionTransaction(): Bytes | null {
-    let value = this.get("executionTransaction");
+  get eta(): BigInt | null {
+    let value = this.get("eta");
     if (!value || value.kind == ValueKind.NULL) {
       return null;
+    } else {
+      return value.toBigInt();
+    }
+  }
+
+  set eta(value: BigInt | null) {
+    if (!value) {
+      this.unset("eta");
+    } else {
+      this.set("eta", Value.fromBigInt(<BigInt>value));
+    }
+  }
+}
+
+export class ProposalStateChange extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id != null, "Cannot save ProposalStateChange entity without an ID");
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        `Entities of type ProposalStateChange must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+      );
+      store.set("ProposalStateChange", id.toString(), this);
+    }
+  }
+
+  static loadInBlock(id: string): ProposalStateChange | null {
+    return changetype<ProposalStateChange | null>(
+      store.get_in_block("ProposalStateChange", id)
+    );
+  }
+
+  static load(id: string): ProposalStateChange | null {
+    return changetype<ProposalStateChange | null>(
+      store.get("ProposalStateChange", id)
+    );
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toString();
+    }
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get proposal(): string {
+    let value = this.get("proposal");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toString();
+    }
+  }
+
+  set proposal(value: string) {
+    this.set("proposal", Value.fromString(value));
+  }
+
+  get newState(): string {
+    let value = this.get("newState");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toString();
+    }
+  }
+
+  set newState(value: string) {
+    this.set("newState", Value.fromString(value));
+  }
+
+  get blockNumber(): BigInt {
+    let value = this.get("blockNumber");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toBigInt();
+    }
+  }
+
+  set blockNumber(value: BigInt) {
+    this.set("blockNumber", Value.fromBigInt(value));
+  }
+
+  get blockTimestamp(): BigInt {
+    let value = this.get("blockTimestamp");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toBigInt();
+    }
+  }
+
+  set blockTimestamp(value: BigInt) {
+    this.set("blockTimestamp", Value.fromBigInt(value));
+  }
+
+  get transactionHash(): Bytes {
+    let value = this.get("transactionHash");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
     } else {
       return value.toBytes();
     }
   }
 
-  set executionTransaction(value: Bytes | null) {
-    if (!value) {
-      this.unset("executionTransaction");
-    } else {
-      this.set("executionTransaction", Value.fromBytes(<Bytes>value));
-    }
+  set transactionHash(value: Bytes) {
+    this.set("transactionHash", Value.fromBytes(value));
   }
 }
 
@@ -4071,5 +4171,23 @@ export class VoteLoader extends Entity {
   load(): Vote[] {
     let value = store.loadRelated(this._entity, this._id, this._field);
     return changetype<Vote[]>(value);
+  }
+}
+
+export class ProposalStateChangeLoader extends Entity {
+  _entity: string;
+  _field: string;
+  _id: string;
+
+  constructor(entity: string, id: string, field: string) {
+    super();
+    this._entity = entity;
+    this._id = id;
+    this._field = field;
+  }
+
+  load(): ProposalStateChange[] {
+    let value = store.loadRelated(this._entity, this._id, this._field);
+    return changetype<ProposalStateChange[]>(value);
   }
 }

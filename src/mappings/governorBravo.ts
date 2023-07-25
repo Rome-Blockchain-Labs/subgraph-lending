@@ -296,7 +296,7 @@ function stringifyValue(value: ethereum.Value): string {
       return value.toBytes().toHexString()
     case ethereum.ValueKind.INT:
     case ethereum.ValueKind.UINT:
-      return value.toI32().toString()
+      return value.toBigInt().toString()
     case ethereum.ValueKind.BOOL:
       return value.toBoolean().toString()
     case ethereum.ValueKind.STRING:

@@ -4,7 +4,7 @@
   "scripts": {
     "codegen": "graph codegen --output-dir src/types/",
     "build": "graph build",
-    "deploy": "graph deploy --node https://api.thegraph.com/deploy/ --network evmos cleivson/tashi-v1-avalanche-test",
+    "deploy": "graph deploy --node https://api.thegraph.com/deploy/ --access-token <TOKEN> --network avalanche benqi-fi/benqi21",
     "deploy-studio": "graph deploy --node https://api.studio.thegraph.com/deploy/ benqi-v1-avalanche",
     "create-local": "graph create --node http://localhost:8020/ benqi-v1-avalanche",
     "remove-local": "graph remove --node http://localhost:8020/ benqi-v1-avalanche",
